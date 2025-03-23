@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: board_db
+    environment:
+      - POSTGRES_USER=board_user
+      - POSTGRES_PASSWORD=pwd123
+      - POSTGRES_DB=db_board
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+  #  networks:
+   #   - main
+
+
+volumes:
+  postgres_data:
+
+#networks:
+#  main:
+ #   name: main
+  #  external: true

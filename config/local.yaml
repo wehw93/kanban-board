@@ -1,0 +1,14 @@
+env: "local" #prod
+
+db:
+  host: "localhost" #board_db
+  port: "5433"
+  name: "db_board"
+  user: "board_user"
+  password: "pwd123"
+  sslmode: "disable"
+
+http_server:
+  address: "0.0.0.0:8080"
+  timeout: "4s"
+  idle_timeout: "60s"

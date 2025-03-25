@@ -1,1 +1,0 @@
-DROP TABLE IF NOT EXISTS columns;

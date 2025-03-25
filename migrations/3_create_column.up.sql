@@ -1,0 +1,6 @@
+CREATE TABLE columns(
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    id_project BIGINT NOT NULL,
+    FOREIGN KEY (id_project) REFERENCES projects(id) ON DELETE CASCADE
+);

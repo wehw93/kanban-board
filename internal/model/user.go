@@ -1,47 +1,30 @@
 package model
 
-import (
-	"time"
-
-)
+import "golang.org/x/crypto/bcrypt"
 
 type User struct {
 	ID                 int
-	name               string
-	email              string
-	encrypted_password string
+	Name               string
+	Email              string
+	Password           string
+	Encrypted_password string
 }
 
-type Column struct {
-	ID         int
-	name       string
-	ID_project int
+func (u *User) BeforeCreate() error {
+	if len(u.Password) > 0 {
+		enc, err := encryptstring(u.Password)
+		if err != nil {
+			return err
+		}
+		u.Encrypted_password = enc
+	}
+	return nil
 }
 
-type Project struct {
-	ID          int
-	name        string
-	id_creator  int
-	description string
+func encryptstring(pass string) (string, error) {
+	b, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.MinCost)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
-
-type Log struct {
-	ID                int
-	ID_task           int
-	date_of_operation time.Time
-	info string
-}
-
- type Task struct{
-	ID int
-	ID_column int
-	name string
-	description string
-	date_of_create time.Time
-	date_of_execution time.Time
-	ID_executor int
-	id_creator int
-	status string
- }
-
-

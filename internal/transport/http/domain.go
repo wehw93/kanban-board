@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/wehw93/kanban-board/internal/config"
-	"github.com/wehw93/kanban-board/service"
+	"github.com/wehw93/kanban-board/internal/service"
 )
 
 type Server struct {
@@ -26,18 +26,22 @@ func NewServer(cfg *config.Config, logger *slog.Logger, svc service.BoardService
 	router.Use(middleware.Recoverer)
 
 	return &Server{
-		Svc: svc,
+		Svc:    svc,
 		Router: router,
 		Logger: logger,
 		Server: &http.Server{
-			Addr: cfg.HTTP_Server.Address,
-			Handler: router,
+			Addr:        cfg.HTTP_Server.Address,
+			Handler:     router,
 			ReadTimeout: cfg.HTTP_Server.Timeout,
 			IdleTimeout: cfg.HTTP_Server.IdleTimeout,
 		},
 	}
 }
 
-func (s*Server) InitRoutes(){
-	
+func (s *Server) InitRoutes() {
+
+}
+
+func (s *Server) Start() error {
+	return s.Server.ListenAndServe()
 }

@@ -7,7 +7,7 @@ CREATE TABLE tasks(
     date_of_execution DATE,
     id_executor BIGINT NOT NULL,
     id_creator BIGINT NOT NULL,
-    status TEXT NOT NULL  CHECK (status IN ('todo', 'in progress', 'done')),
+    status TEXT NOT NULL ,
     FOREIGN KEY(id_column) REFERENCES columns(id) ON DELETE CASCADE,
     FOREIGN KEY(id_executor) REFERENCES users(id),
     FOREIGN KEY(id_creator) REFERENCES users(id) ON DELETE CASCADE

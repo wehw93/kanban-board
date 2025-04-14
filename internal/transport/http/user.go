@@ -31,8 +31,9 @@ func (s *Server) CreateUser() http.HandlerFunc {
 		log.Info("createUser", slog.Any("request", r))
 
 		user := &model.User{
-			Name:  r.Name,
-			Email: r.Email,
+			Name:     r.Name,
+			Email:    r.Email,
+			Password: r.Password,
 		}
 		err = user.BeforeCreate()
 		if err != nil {
@@ -42,12 +43,12 @@ func (s *Server) CreateUser() http.HandlerFunc {
 		}
 		log.Info("creating user with data", slog.String("Email", user.Email), slog.String("Password", user.Password))
 
-		userResponce, err := s.Svc.CreateUser()
+		err = s.Svc.CreateUser(user)
 		if err != nil {
 			s.error(resp, req, http.StatusUnprocessableEntity, err)
 			return
 		}
-		s.respond(resp, req, http.StatusCreated, userResponce)
+		s.respond(resp, req, http.StatusCreated, user)
 
 	}
 }

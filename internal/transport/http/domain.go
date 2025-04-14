@@ -39,7 +39,11 @@ func NewServer(cfg *config.Config, logger *slog.Logger, svc service.BoardService
 }
 
 func (s *Server) InitRoutes() {
-
+	s.Router.Route("/create_user", func (r chi.Router){
+		r.Use(middleware.AllowContentType("application/json"))
+		r.Use(middleware.SetHeader("Content-Type", "application/json"))
+		r.Post("/",s.CreateUser())
+	})
 }
 
 func (s *Server) Start() error {

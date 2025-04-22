@@ -2,9 +2,12 @@ package board
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/wehw93/kanban-board/internal/lib/jwt"
 	"github.com/wehw93/kanban-board/internal/model"
 	"github.com/wehw93/kanban-board/internal/storage"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Service struct {
@@ -15,6 +18,23 @@ func NewService(store storage.Store) *Service {
 	return &Service{
 		store: store,
 	}
+}
+
+func (s *Service) Login(email string, password string) (string, error) {
+	const op = "board.service.Login"
+	user, err := s.store.User().Login(email)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Encrypted_password), []byte(password)); err != nil {
+		return "", fmt.Errorf("%s : %w", op, err)
+	}
+	token, err := jwt.NewToken(user, time.Hour, "secret")
+	if err != nil {
+		return "", fmt.Errorf("%s : %w", op, err)
+	}
+	return token, nil
+
 }
 
 func (s *Service) CreateUser(user *model.User) error {

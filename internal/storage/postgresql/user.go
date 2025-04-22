@@ -24,3 +24,15 @@ func (r *UserRepository) Create(u *model.User) error {
 	}
 	return nil
 }
+
+func (r *UserRepository) Login(email string) (model.User, error) {
+	const op = "storage.postgresql.user.User"
+	res := r.store.db.QueryRow("SELECT id,name,encrypted_password WHERE email = ?", email)
+	var user model.User
+	err := res.Scan(&user.ID, &user.Name, &user.Encrypted_password)
+	if err != nil {
+		return model.User{}, err
+	}
+	user.Email = email
+	return user, nil
+}

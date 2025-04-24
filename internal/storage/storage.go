@@ -1,9 +1,17 @@
 package storage
 
-type Store interface{
+import "errors"
+
+type Store interface {
 	User() UserRepository
 	Project() ProjectRepository
 	Column() ColumnRepository
-	Task_log()Task_log_Repository
+	Task_log() Task_log_Repository
 	Task() TaskRepository
 }
+
+var (
+	ErrUserExists   = errors.New("user already exists")
+	ErrUserNotFound = errors.New("user not found")
+	ErrAppNotFound  = errors.New("app not found")
+)

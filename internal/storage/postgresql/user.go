@@ -1,10 +1,13 @@
 package postgresql
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
 
 	"github.com/wehw93/kanban-board/internal/model"
+	"github.com/wehw93/kanban-board/internal/storage"
 )
 
 type UserRepository struct {
@@ -27,11 +30,16 @@ func (r *UserRepository) Create(u *model.User) error {
 
 func (r *UserRepository) Login(email string) (model.User, error) {
 	const op = "storage.postgresql.user.User"
-	res := r.store.db.QueryRow("SELECT id,name,encrypted_password WHERE email = ?", email)
+	res := r.store.db.QueryRow("SELECT id,name,encrypted_password FROM users WHERE email = $1", email)
 	var user model.User
 	err := res.Scan(&user.ID, &user.Name, &user.Encrypted_password)
 	if err != nil {
-		return model.User{}, err
+		if errors.Is(err,sql.ErrNoRows){
+			return model.User{},fmt.Errorf("%s: %w", op,storage.ErrUserNotFound)
+
+		}
+		return model.User{}, fmt.Errorf("%s: %w",op,err)
+
 	}
 	user.Email = email
 	return user, nil

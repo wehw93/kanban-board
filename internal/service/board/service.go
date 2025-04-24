@@ -1,7 +1,9 @@
 package board
 
 import (
+	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/wehw93/kanban-board/internal/lib/jwt"
@@ -24,7 +26,12 @@ func (s *Service) Login(email string, password string) (string, error) {
 	const op = "board.service.Login"
 	user, err := s.store.User().Login(email)
 	if err != nil {
-		return "", fmt.Errorf("%s: %w", op, err)
+		if errors.Is(err, storage.ErrUserNotFound) {
+			slog.Warn("user not found", err)
+			return "", fmt.Errorf("%s: %w",op,"Invalid credentials")
+		}
+		slog.Warn("failed to get user",err)
+		return "", fmt.Errorf("%s: %w",op,err)
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Encrypted_password), []byte(password)); err != nil {
 		return "", fmt.Errorf("%s : %w", op, err)

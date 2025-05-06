@@ -18,6 +18,8 @@ type CreateUserRequest struct {
 	Email    string `json:"email" validate:"required"`
 }
 
+const JWTSecret = "secret"
+
 func (s *Server) CreateUser() http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
 		const op = "transport.http.CreateUser"
@@ -59,28 +61,55 @@ type LoginUserRequest struct {
 	Password string `json:"password" validate:"required"`
 }
 
-func (s *Server) Login() http.HandlerFunc {
+func (s *Server) LoginUser() http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
 		const op = "transport.http.Login"
 		log := s.Logger.With(slog.String("op:", op))
 		var r LoginUserRequest
 		err := render.DecodeJSON(req.Body, &r)
 		if err != nil {
-			log.Error("Failed to prepare user", sl.Err(err))
+			log.Error("Failed to decode request", sl.Err(err))
 			render.JSON(resp, req, responce.Error("Failed to decode request"))
 			return
 		}
-		log.Info("LoginUser", slog.Any("request", r))
+		log.Info("succes decode request", slog.Any("request", r))
 
 		token, err := s.Svc.Login(r.Email, r.Password)
 		if err != nil {
 			s.error(resp, req, http.StatusUnprocessableEntity, err)
 			return
 		}
-		res, err := helpers_jwt.ParseToken(token, "secret")
-		s.respond(resp, req, http.StatusCreated, res)
+		s.JWTSecret = JWTSecret
+		//res, err := helpers_jwt.ParseToken(token, s.JWTSecret)
+		s.respond(resp, req, http.StatusCreated, token)
 	}
 }
+
+type ReadUserRequest struct{
+	JWTToken string `json:"jwt-token" validate:"required"`
+}
+
+
+func (s *Server) ReadUser() http.HandlerFunc {
+		return func(resp http.ResponseWriter, req *http.Request) {
+			const op = "transport.http.ReadUser"
+			log := s.Logger.With(slog.String("op:", op))
+			var r ReadUserRequest
+			err:=render.DecodeJSON(req.Body,&r)
+			if err!=nil{
+				log.Error("Failed to decode token", sl.Err(err))
+				render.JSON(resp, req, responce.Error("Failed to decode request"))
+				return
+			}
+			log.Info( "succes decode request",slog.Any("request",r))
+			s.JWTSecret = JWTSecret
+			clms,err:=helpers_jwt.ParseToken(r.JWTToken,s.JWTSecret)
+			if err!=nil{
+				log.Error("failed to parse token",sl.Err(err))
+			}
+
+		}
+	}
 
 /*
 type DeleteUserRequest struct{

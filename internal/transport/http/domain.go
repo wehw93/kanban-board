@@ -16,6 +16,7 @@ type Server struct {
 	Router *chi.Mux
 	Logger *slog.Logger
 	Svc    service.BoardService
+	JWTSecret string
 }
 
 func NewServer(cfg *config.Config, logger *slog.Logger, svc service.BoardService) *Server {
@@ -47,7 +48,7 @@ func (s *Server) InitRoutes() {
 	s.Router.Route("/login_user", func (r chi.Router){
 		r.Use(middleware.AllowContentType("application/json"))
 		r.Use(middleware.SetHeader("Content-Type", "application/json"))
-		r.Post("/",s.Login())
+		r.Post("/",s.LoginUser())
 	})
 }
 

@@ -29,7 +29,7 @@ func (r *UserRepository) Create(u *model.User) error {
 }
 
 func (r *UserRepository) Login(email string) (model.User, error) {
-	const op = "storage.postgresql.user.User"
+	const op = "storage.postgresql.user.Login"
 	res := r.store.db.QueryRow("SELECT id,name,encrypted_password FROM users WHERE email = $1", email)
 	var user model.User
 	err := res.Scan(&user.ID, &user.Name, &user.Encrypted_password)
@@ -44,3 +44,23 @@ func (r *UserRepository) Login(email string) (model.User, error) {
 	user.Email = email
 	return user, nil
 }
+
+func (r * UserRepository) GetUserByID(user_id int)(model.User,error){
+	const op = "storage.postgresql.user.getuserbyid"
+	res:=r.store.db.QueryRow("SELECT name,email, FROM users WHERE id = $1", user_id)
+	var user model.User
+	err:=res.Scan(&user.Name,&user.Email)
+	if err!=nil{
+		if errors.Is(err,sql.ErrNoRows){
+			return model.User{},fmt.Errorf("%s: %w", op,storage.ErrUserNotFound)
+
+		}
+		return model.User{}, fmt.Errorf("%s: %w",op,err)
+	}
+	return user,nil
+}
+
+func (r* UserRepository) GetUserProjects(user_id int)([]model.Project,error){
+	const op = "storage.postgresql.user.getuserprojects"
+	var 
+} 

@@ -1,11 +1,13 @@
 package main
 
+//
+
 import (
 	"log/slog"
 	"os"
 
 	"github.com/wehw93/kanban-board/internal/config"
-	"github.com/wehw93/kanban-board/internal/lig/logger/sl"
+	"github.com/wehw93/kanban-board/internal/lib/logger/sl"
 	"github.com/wehw93/kanban-board/internal/service/board"
 	"github.com/wehw93/kanban-board/internal/storage/postgresql"
 	server "github.com/wehw93/kanban-board/internal/transport/http"
@@ -35,7 +37,6 @@ func main() {
 		log.Error("failed to start server", sl.Err(err))
 		os.Exit(1)
 	}
-
 }
 
 func SetupLogger(env string) *slog.Logger {

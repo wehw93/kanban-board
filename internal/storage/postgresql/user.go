@@ -34,33 +34,82 @@ func (r *UserRepository) Login(email string) (model.User, error) {
 	var user model.User
 	err := res.Scan(&user.ID, &user.Name, &user.Encrypted_password)
 	if err != nil {
-		if errors.Is(err,sql.ErrNoRows){
-			return model.User{},fmt.Errorf("%s: %w", op,storage.ErrUserNotFound)
+		if errors.Is(err, sql.ErrNoRows) {
+			return model.User{}, fmt.Errorf("%s: %w", op, storage.ErrUserNotFound)
 
 		}
-		return model.User{}, fmt.Errorf("%s: %w",op,err)
+		return model.User{}, fmt.Errorf("%s: %w", op, err)
 
 	}
 	user.Email = email
 	return user, nil
 }
 
-func (r * UserRepository) GetUserByID(user_id int)(model.User,error){
+func (r *UserRepository) GetByID(user_id int) (model.User, error) {
 	const op = "storage.postgresql.user.getuserbyid"
-	res:=r.store.db.QueryRow("SELECT name,email, FROM users WHERE id = $1", user_id)
+	res := r.store.db.QueryRow("SELECT name,email FROM users WHERE id = $1", user_id)
 	var user model.User
-	err:=res.Scan(&user.Name,&user.Email)
-	if err!=nil{
-		if errors.Is(err,sql.ErrNoRows){
-			return model.User{},fmt.Errorf("%s: %w", op,storage.ErrUserNotFound)
+	err := res.Scan(&user.Name, &user.Email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return model.User{}, fmt.Errorf("%s: %w", op, storage.ErrUserNotFound)
 
 		}
-		return model.User{}, fmt.Errorf("%s: %w",op,err)
+		return model.User{}, fmt.Errorf("%s: %w", op, err)
 	}
-	return user,nil
+	return user, nil
 }
 
-func (r* UserRepository) GetUserProjects(user_id int)([]model.Project,error){
-	const op = "storage.postgresql.user.getuserprojects"
-	var 
-} 
+func (r *UserRepository) GetProjects(user_id int) ([]model.Project, error) {
+	const op = "storage.postgresql.user.GetProjects"
+
+	var projects []model.Project
+
+	rows, err := r.store.db.Query(`
+        SELECT id, name, description 
+        FROM projects 
+        WHERE id_creator = $1`,
+		user_id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var p model.Project
+		if err := rows.Scan(
+			&p.ID,  
+			&p.Name, 
+			&p.Description,
+		); err != nil {
+			return nil, fmt.Errorf("%s: scan error: %w", op, err)
+		}
+		projects = append(projects, p)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("%s: rows error: %w", op, err)
+	}
+
+	return projects, nil
+}
+func (r *UserRepository) GetTasks(user_id int) ([]model.Task, error) {
+	const op = "storage.postgresql.user.getusertasks"
+	var tasks []model.Task
+	rows, err := r.store.db.Query("SELECT id,name,description,status FROM tasks WHERE id_executor = $1", user_id)
+	defer rows.Close()
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	for rows.Next() {
+		var t model.Task
+		if err := rows.Scan(&t.ID, &t.Name, &t.Description, &t.Status); err != nil {
+			return nil, fmt.Errorf("%s:%w", op, err)
+		}
+		tasks = append(tasks, t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("%s:%w", op, err)
+	}
+	return tasks, nil
+}

@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/wehw93/kanban-board/internal/lib/jwt"
+	"github.com/wehw93/kanban-board/internal/lib/http/response"
 	"github.com/wehw93/kanban-board/internal/model"
 	"github.com/wehw93/kanban-board/internal/storage"
 	srv "github.com/wehw93/kanban-board/internal/transport/http"
-	"github.com/wehw93/kanban-board/internal/transport/http/response"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -24,18 +24,16 @@ func NewService(store storage.Store) *Service {
 	}
 }
 
-
-
 func (s *Service) LoginUser(email string, password string) (string, error) {
 	const op = "board.service.Login"
 	user, err := s.store.User().Login(email)
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
 			slog.Warn("user not found", err)
-			return "", fmt.Errorf("%s: %w",op,"Invalid credentials")
+			return "", fmt.Errorf("%s: %w", op, "Invalid credentials")
 		}
-		slog.Warn("failed to get user",err)
-		return "", fmt.Errorf("%s: %w",op,err)
+		slog.Warn("failed to get user", err)
+		return "", fmt.Errorf("%s: %w", op, err)
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Encrypted_password), []byte(password)); err != nil {
 		return "", fmt.Errorf("%s : %w", op, err)
@@ -56,12 +54,41 @@ func (s *Service) CreateUser(user *model.User) error {
 	return nil
 }
 
-
 func (s *Service) ReadUser(user_id int) (*response.ReadUserResponse, error) {
 	const op = "board.service.ReadUser"
-	user,err:=s.store.User().GetUserByID(user_id)
-	if err!=nil{
-		return nil,fmt.Errorf("%s:%w",op,err)
+	user, err := s.store.User().GetByID(user_id)
+	if err != nil {
+		return nil, fmt.Errorf("%s:%w", op, err)
 	}
-	
+	projects, err := s.store.User().GetProjects(user_id)
+	if err != nil {
+		return nil, fmt.Errorf("%s:%w", op, err)
+	}
+	tasks, err := s.store.User().GetTasks(user_id)
+	if err != nil {
+		return nil, fmt.Errorf("%s:%w", op, err)
+	}
+	resp := &response.ReadUserResponse{
+		ID:       uint(user_id),
+		Name:     user.Name,
+		Email:    user.Email,
+		Projects: make([]response.ProjectBrief, 0, len(projects)),
+		Tasks:    make([]response.TaskBrief, 0, len(tasks)),
+	}
+	for _, p := range projects {
+		resp.Projects = append(resp.Projects, response.ProjectBrief{
+			ID:          uint(p.ID),
+			Name:        p.Name,
+			Description: p.Description,
+		})
+	}
+	for _, t := range tasks {
+		resp.Tasks = append(resp.Tasks, response.TaskBrief{
+			ID:     uint(t.ID),
+			Name:   t.Name,
+			Status: t.Status,
+		})
+	}
+	return resp, nil
+
 }

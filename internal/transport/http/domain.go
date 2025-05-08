@@ -50,6 +50,11 @@ func (s *Server) InitRoutes() {
 		r.Use(middleware.SetHeader("Content-Type", "application/json"))
 		r.Post("/",s.LoginUser())
 	})
+	s.Router.Route("/read_user", func (r chi.Router){
+		r.Use(middleware.AllowContentType("application/json"))
+		r.Use(middleware.SetHeader("Content-Type", "application/json"))
+		r.Post("/",s.ReadUser())
+	})
 }
 
 func (s *Server) Start() error {

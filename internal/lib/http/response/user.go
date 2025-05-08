@@ -16,5 +16,6 @@ type ProjectBrief struct {
 
 type TaskBrief struct {
     ID     uint   `json:"id"`
-    Title  string `json:"title"`
+    Name  string `json:"title"`
+    Status string `json:"status"`
 }

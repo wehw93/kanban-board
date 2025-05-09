@@ -45,6 +45,22 @@ func (r *UserRepository) Login(email string) (model.User, error) {
 	return user, nil
 }
 
+func (r *UserRepository) Delete(user_id int) error {
+	const op = "storage.postgresql.user.delete"
+	res, err := r.store.db.Exec("DELETE FROM users WHERE id = $1", user_id)
+	if err != nil {
+		return fmt.Errorf("%s:%w", op, err)
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s:%w", op, err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("%s:%w", op, storage.ErrUserNotFound)
+	}
+	return nil
+}
+
 func (r *UserRepository) GetByID(user_id int) (model.User, error) {
 	const op = "storage.postgresql.user.getuserbyid"
 	res := r.store.db.QueryRow("SELECT name,email FROM users WHERE id = $1", user_id)
@@ -78,8 +94,8 @@ func (r *UserRepository) GetProjects(user_id int) ([]model.Project, error) {
 	for rows.Next() {
 		var p model.Project
 		if err := rows.Scan(
-			&p.ID,  
-			&p.Name, 
+			&p.ID,
+			&p.Name,
 			&p.Description,
 		); err != nil {
 			return nil, fmt.Errorf("%s: scan error: %w", op, err)
@@ -112,4 +128,37 @@ func (r *UserRepository) GetTasks(user_id int) ([]model.Task, error) {
 		return nil, fmt.Errorf("%s:%w", op, err)
 	}
 	return tasks, nil
+}
+
+func (r *UserRepository) UpdatePassword(u *model.User) error {
+	const op = "storage.postgresql.user.UpdatePassword"
+	res, err := r.store.db.Exec("UPDATE users SET encrypted_password = $1 WHERE id = $2", u.Encrypted_password, u.ID)
+	if err != nil {
+		return fmt.Errorf("%s:%w", op, err)
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s:%w", op, err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("%s:%w", op, storage.ErrUserNotFound)
+	}
+	return nil
+}
+
+
+func (r *UserRepository) UpdateEmail(u *model.User) error {
+	const op = "storage.postgresql.user.UpdateEmail"
+	res, err := r.store.db.Exec("UPDATE users SET email = $1 WHERE id = $2", u.Email, u.ID)
+	if err != nil {
+		return fmt.Errorf("%s:%w", op, err)
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s:%w", op, err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("%s:%w", op, storage.ErrUserNotFound)
+	}
+	return nil
 }

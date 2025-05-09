@@ -12,7 +12,7 @@ type User struct {
 
 func (u *User) BeforeCreate() error {
 	if len(u.Password) > 0 {
-		enc, err := encryptstring(u.Password)
+		enc, err := Encryptstring(u.Password)
 		if err != nil {
 			return err
 		}
@@ -21,7 +21,7 @@ func (u *User) BeforeCreate() error {
 	return nil
 }
 
-func encryptstring(pass string) (string, error) {
+func Encryptstring(pass string) (string, error) {
 	b, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.MinCost)
 	if err != nil {
 		return "", err

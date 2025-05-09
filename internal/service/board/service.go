@@ -92,3 +92,30 @@ func (s *Service) ReadUser(user_id int) (*response.ReadUserResponse, error) {
 	return resp, nil
 
 }
+
+func (s * Service) DeleteUser(user_id int) error{
+	const op = "board.service.deleteuser"
+	err:=s.store.User().Delete(user_id)
+	if err!=nil{
+		return fmt.Errorf("%s : %w",op,err)
+	}
+	return nil
+}
+
+func (s * Service) UpdateEmail(user model.User) error{
+	const op = "board.service.updateEmail"
+	err:=s.store.User().UpdateEmail(&user)
+	if err!=nil{
+		return fmt.Errorf("%s : %w",op,err)
+	}
+	return nil
+}
+
+func (s * Service) UpdatePassword(user model.User) error{
+	const op = "board.service.updatePassword"
+	err:=s.store.User().UpdatePassword(&user)
+	if err!=nil{
+		return fmt.Errorf("%s : %w",op,err)
+	}
+	return nil
+}

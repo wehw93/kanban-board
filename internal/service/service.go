@@ -9,4 +9,7 @@ type BoardService interface {
 	CreateUser(user *model.User) error
 	LoginUser(email string, password string) (string, error)
 	ReadUser(user_id int) (*response.ReadUserResponse, error)
+	DeleteUser(user_id int) error
+	UpdateEmail(user model.User) error
+	UpdatePassword(user model.User) error
 }

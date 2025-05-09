@@ -9,6 +9,6 @@ CREATE TABLE tasks(
     id_creator BIGINT NOT NULL,
     status TEXT NOT NULL ,
     FOREIGN KEY(id_column) REFERENCES columns(id) ON DELETE CASCADE,
-    FOREIGN KEY(id_executor) REFERENCES users(id),
+    FOREIGN KEY(id_executor) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY(id_creator) REFERENCES users(id) ON DELETE CASCADE
 );

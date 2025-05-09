@@ -8,4 +8,7 @@ type UserRepository interface {
 	GetByID(user_id int) (model.User, error)
 	GetProjects(user_id int) ([]model.Project, error)
 	GetTasks(user_id int) ([]model.Task, error)
+	Delete(user_id int) error
+	UpdatePassword(u *model.User) error
+	UpdateEmail(u *model.User) error
 }

@@ -75,3 +75,27 @@ func (r *ProjectRepository) GetTasks(projectID int) ([]model.Task, error) {
 	}
 	return tasks, nil
 }
+
+func (r *ProjectRepository) Delete(userID int, name string) error {
+	const op = "storage.postgresql.project.delete"
+	
+	res, err := r.store.db.Exec(
+		"DELETE FROM projects WHERE id_creator = $1 and name = $2", 
+		userID,
+		name,
+	)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	
+	if rowsAffected == 0 {
+		return fmt.Errorf("%s: %w", op, storage.ErrProjectNotFound)
+	}
+	
+	return nil
+}

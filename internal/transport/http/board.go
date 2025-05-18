@@ -104,3 +104,50 @@ func (s *Server) ReadProject() http.HandlerFunc {
 		})
 	}
 }
+
+type DeleteProjectRequest struct{
+	Name string `json:"name" validate:"required"`
+}
+
+func (s *Server) DeleteProject()http.HandlerFunc{
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "http.DeleteProject"
+		log := s.Logger.With(slog.String("op", op))
+		userID, ok := r.Context().Value("userID").(int)
+		if !ok {
+			log.Error("failed to get userID from context")
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "Internal server error",
+			})
+			return
+		}
+		var req DeleteProjectRequest
+		err := render.DecodeJSON(r.Body, &req)
+		if err!=nil{
+			log.Error("failed to decode request", sl.Err(err))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusBadRequest,
+				Message: "Invalid request body",
+			})
+			return
+		}
+		log.Info("deleting project",
+    		slog.String("name", req.Name),
+    		slog.Int("user_id", userID),
+		)
+
+		if err := s.Svc.DeleteProject(userID,req.Name); err != nil {
+			log.Error("failed to delete project",sl.Err(err))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "Failed to delete user",
+			})
+			return
+		}
+		render.JSON(w, r, response.SuccessResponse{
+			Status:  http.StatusOK,
+			Message: "User deleted successfully",
+		})
+	}
+}

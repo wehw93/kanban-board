@@ -152,5 +152,14 @@ func (s *Service) ReadProject(name string) (*response.ReadProjectResponse, error
 		})
 	}
 	return resp, nil
+}
 
+func (s *Service) DeleteProject(userID int,name string)error{
+	const op = "board.service.DeleteProject"
+
+	err:=s.store.Project().Delete(userID,name)
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	return nil
 }

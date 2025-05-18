@@ -67,6 +67,7 @@ func (s *Server) InitRoutes() {
 		r.Route("/projects", func(r chi.Router) {
 			r.Post("/", s.CreateProject())
 			r.Get("/read", s.ReadProject())
+			r.Delete("/",s.DeleteProject())
 		})
 	})
 }

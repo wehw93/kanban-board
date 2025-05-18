@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/wehw93/kanban-board/internal/lib/jwt"
 	"github.com/wehw93/kanban-board/internal/lib/http/response"
+	"github.com/wehw93/kanban-board/internal/lib/jwt"
 	"github.com/wehw93/kanban-board/internal/model"
 	"github.com/wehw93/kanban-board/internal/storage"
 	srv "github.com/wehw93/kanban-board/internal/transport/http"
@@ -93,29 +93,64 @@ func (s *Service) ReadUser(user_id int) (*response.ReadUserResponse, error) {
 
 }
 
-func (s * Service) DeleteUser(user_id int) error{
+func (s *Service) DeleteUser(user_id int) error {
 	const op = "board.service.deleteuser"
-	err:=s.store.User().Delete(user_id)
-	if err!=nil{
-		return fmt.Errorf("%s : %w",op,err)
+	err := s.store.User().Delete(user_id)
+	if err != nil {
+		return fmt.Errorf("%s : %w", op, err)
 	}
 	return nil
 }
 
-func (s * Service) UpdateEmail(user model.User) error{
+func (s *Service) UpdateEmail(user model.User) error {
 	const op = "board.service.updateEmail"
-	err:=s.store.User().UpdateEmail(&user)
-	if err!=nil{
-		return fmt.Errorf("%s : %w",op,err)
+	err := s.store.User().UpdateEmail(&user)
+	if err != nil {
+		return fmt.Errorf("%s : %w", op, err)
 	}
 	return nil
 }
 
-func (s * Service) UpdatePassword(user model.User) error{
+func (s *Service) UpdatePassword(user model.User) error {
 	const op = "board.service.updatePassword"
-	err:=s.store.User().UpdatePassword(&user)
-	if err!=nil{
-		return fmt.Errorf("%s : %w",op,err)
+	err := s.store.User().UpdatePassword(&user)
+	if err != nil {
+		return fmt.Errorf("%s : %w", op, err)
 	}
 	return nil
+}
+
+func (s *Service) CreateProject(project *model.Project) error {
+	const op = "service.CreateProject"
+	err := s.store.Project().Create(project)
+	if err != nil {
+		return fmt.Errorf("%s:%w", op, err)
+	}
+	return nil
+}
+
+func (s *Service) ReadProject(name string) (*response.ReadProjectResponse, error) {
+	const op = "board.service.ReadProject"
+	project, err := s.store.Project().GetByName(name)
+	if err != nil {
+		return nil, fmt.Errorf("%s:%w", op, err)
+	}
+	tasks, err := s.store.Project().GetTasks(project.ID)
+	if err != nil {
+		return nil, fmt.Errorf("%s:%w", op, err)
+	}
+	resp := &response.ReadProjectResponse{
+		ID:       uint(project.ID),
+		Name:     project.Name,
+		Description: project.Description,
+	}
+	for _, t := range tasks {
+		resp.Tasks = append(resp.Tasks, response.TaskBrief{
+			ID:     uint(t.ID),
+			Name:   t.Name,
+			Status: t.Status,
+		})
+	}
+	return resp, nil
+
 }

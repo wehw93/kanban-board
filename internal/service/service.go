@@ -12,4 +12,6 @@ type BoardService interface {
 	DeleteUser(user_id int) error
 	UpdateEmail(user model.User) error
 	UpdatePassword(user model.User) error
+	CreateProject(name string) (*response.ReadProjectResponse,error)
+	
 }

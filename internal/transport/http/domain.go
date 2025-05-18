@@ -2,20 +2,22 @@ package http
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/render"
 
 	"github.com/wehw93/kanban-board/internal/config"
+	"github.com/wehw93/kanban-board/internal/lib/http/response"
 	"github.com/wehw93/kanban-board/internal/lib/jwt/helpers_jwt"
 	"github.com/wehw93/kanban-board/internal/lib/logger/sl"
 	"github.com/wehw93/kanban-board/internal/service"
 )
+
+const JWTSecret = "secret"
 
 type Server struct {
 	Server    *http.Server
@@ -58,7 +60,8 @@ func (s *Server) InitRoutes() {
 		r.Use(s.AuthentificationUser)
 		r.Post("/read_user", s.ReadUser())
 		r.Post("/delete_user", s.DeleteUser())
-		r.Post("/update_user",s.UpdateUser())
+		r.Post("/update_user", s.UpdateUser())
+		r.Post("/create_project", s.CreateProject())
 	})
 }
 
@@ -68,43 +71,44 @@ func (s *Server) AuthentificationUser(next http.Handler) http.Handler {
 		log := s.Logger.With(slog.String("op", op))
 		tokenString := r.Header.Get("Authorization")
 		if tokenString == "" {
-			log.Error("authorazation header missing")
-			s.error(w, r, http.StatusUnauthorized, errors.New("invalid authorization header format"))
+			log.Error("authorization header missing")
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusUnauthorized,
+				Message: "Authorization header missing",
+			})
 			return
 		}
 		parts := strings.Split(tokenString, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			log.Error("invalid authorization header format")
-			s.error(w, r, http.StatusUnauthorized, errors.New("invalid authorization header format"))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusUnauthorized,
+				Message: "Invalid authorization header format",
+			})
 			return
 		}
 		s.JWTSecret = JWTSecret
-		claims, err := helpers_jwt.ParseToken(parts[1],s.JWTSecret)
+		claims, err := helpers_jwt.ParseToken(parts[1], s.JWTSecret)
 		if err != nil {
 			log.Error("failed to parse token", sl.Err(err))
-			s.error(w, r, http.StatusUnauthorized, errors.New("invalid token"))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusUnauthorized,
+				Message: "Invalid token",
+			})
 			return
 		}
 		user_id, ok := claims["uid"].(float64)
 		if !ok {
 			log.Error("invalid user ID in token")
-			s.error(w, r, http.StatusUnauthorized, errors.New("invalid user ID in token"))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusUnauthorized,
+				Message: "Invalid user ID in token",
+			})
 			return
 		}
 		ctx := context.WithValue(r.Context(), "userID", int(user_id))
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-func (s *Server) error(w http.ResponseWriter, r *http.Request, code int, err error) {
-	s.respond(w, r, code, map[string]string{"error": err.Error()})
-}
-
-func (s *Server) respond(w http.ResponseWriter, r *http.Request, code int, data interface{}) {
-	w.WriteHeader(code)
-	if data != nil {
-		json.NewEncoder(w).Encode(data)
-	}
 }
 
 func (s *Server) Start() error {

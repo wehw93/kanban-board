@@ -1,10 +1,13 @@
 package postgresql
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
 
 	"github.com/wehw93/kanban-board/internal/model"
+	"github.com/wehw93/kanban-board/internal/storage"
 )
 
 type ProjectRepository struct {
@@ -28,9 +31,47 @@ func (r *ProjectRepository) Create(project *model.Project) error {
 }
 func (r *ProjectRepository) GetByName(name string) (*model.Project, error) {
 	const op = "storage.postgresql.project.getbyname"
-
-	rows, err := r.store.db.Query("SELECT * FROM projects WHERE name = $1", name)
-	if err != nil {
-		return nil,fmt.Errorf("%s: %w", op, err)
+	project := &model.Project{
+		Name: name,
 	}
+	err := r.store.db.QueryRow("SELECT * FROM projects WHERE name = $1", name).Scan(&project.ID, &project.Name, &project.IDCreator, &project.Description)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("%s: %w", op, storage.ErrProjectNotFound)
+		}
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return project, nil
+}
+
+func (r *ProjectRepository) GetTasks(projectID int) ([]model.Task, error) {
+	const op = "storage.postgresql.project.get_tasks"
+
+	rows, err := r.store.db.Query(
+		`SELECT t.id, t.name, t.description,t.status FROM tasks t 
+		JOIN columns c ON t.id_column = c.id 
+		WHERE c.id_project = $1`,
+		projectID,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	defer rows.Close()
+	var tasks []model.Task
+	for rows.Next() {
+		var t model.Task
+		if err := rows.Scan(
+			&t.ID,
+			&t.Name,
+			&t.Description,
+			&t.Status,
+		); err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		tasks = append(tasks, t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return tasks, nil
 }

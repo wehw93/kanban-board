@@ -50,18 +50,24 @@ func NewServer(cfg *config.Config, logger *slog.Logger, svc service.BoardService
 func (s *Server) InitRoutes() {
 	s.Router.Route("/auth", func(r chi.Router) {
 		r.Use(middleware.AllowContentType("application/json"))
-		r.Use(middleware.SetHeader("Content-Type", "application/json"))
-		r.Post("/create_user", s.CreateUser())
-		r.Post("/login_user", s.LoginUser())
+		r.Post("/register", s.CreateUser())
+		r.Post("/login", s.LoginUser())
 	})
 	s.Router.Route("/api", func(r chi.Router) {
 		r.Use(middleware.AllowContentType("application/json"))
 		r.Use(middleware.SetHeader("Content-Type", "application/json"))
 		r.Use(s.AuthentificationUser)
-		r.Post("/read_user", s.ReadUser())
-		r.Post("/delete_user", s.DeleteUser())
-		r.Post("/update_user", s.UpdateUser())
-		r.Post("/create_project", s.CreateProject())
+
+		r.Route("/users", func(r chi.Router) {
+			r.Get("/me", s.ReadUser())
+			r.Put("/me", s.UpdateUser())
+			r.Delete("/me", s.DeleteUser())
+		})
+
+		r.Route("/projects", func(r chi.Router) {
+			r.Post("/", s.CreateProject())
+			r.Get("/read", s.ReadProject())
+		})
 	})
 }
 

@@ -70,7 +70,7 @@ func (s *Server) CreateProject() http.HandlerFunc {
 }
 
 type ReadProjectRequest struct {
-	Name string `json:"name" validate:"requires"`
+	Name string `json:"name" validate:"required"`
 }
 
 func (s *Server) ReadProject() http.HandlerFunc {
@@ -79,6 +79,14 @@ func (s *Server) ReadProject() http.HandlerFunc {
 		log := s.Logger.With(slog.String("op", op))
 		var req ReadProjectRequest
 		err := render.DecodeJSON(r.Body, &req)
+		if err!=nil{
+			log.Error("failed to decode request", sl.Err(err))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusBadRequest,
+				Message: "Invalid request body",
+			})
+			return
+		}
 
 		log.Info("reading data of project", slog.String("name",req.Name))
 		resp,err := s.Svc.ReadProject(req.Name)

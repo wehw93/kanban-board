@@ -135,7 +135,7 @@ func (s *Service) ReadProject(name string) (*response.ReadProjectResponse, error
 	if err != nil {
 		return nil, fmt.Errorf("%s:%w", op, err)
 	}
-	tasks, err := s.store.Project().GetTasks(project.ID)
+	tasks, err := s.store.Project().GetTasks(int(project.ID))
 	if err != nil {
 		return nil, fmt.Errorf("%s:%w", op, err)
 	}

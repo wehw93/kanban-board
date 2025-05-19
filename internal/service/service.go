@@ -17,4 +17,5 @@ type BoardService interface {
 	DeleteProject(userID int,name string) error
 	UpdateProjectDescription(project model.Project)error
 	UpdateProjectName(name string,project model.Project)error
+	ListProjects()([]model.Project,error)
 }

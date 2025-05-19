@@ -183,3 +183,13 @@ func (s*Service)UpdateProjectDescription(project model.Project)error{
 	}
 	return nil
 }
+
+func (s*Service)ListProjects()([]model.Project,error){
+	const op = "board.service.ListProjects"
+
+	listProjects,err:=s.store.Project().ListProjects()
+	if err!=nil{
+		return nil,fmt.Errorf("%s: %w",op,err)
+	}
+	return listProjects,nil
+}

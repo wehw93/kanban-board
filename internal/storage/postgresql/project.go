@@ -137,3 +137,30 @@ func (r*ProjectRepository) UpdateDescription(project model.Project)error{
 	}
 	return nil
 }
+
+func (r*ProjectRepository) ListProjects()([]model.Project,error){
+	const op = "storage.postgresql.project.ListProjects"
+
+	var listProjects []model.Project
+	rows,err:=r.store.db.Query("SELECT * FROM projects")
+	if err!=nil{
+		return nil,fmt.Errorf("%s: %w",op,err)
+	}
+	defer rows.Close()
+	for rows.Next(){
+		var p model.Project
+		if err:=rows.Scan(
+			&p.ID,
+			&p.Name,
+			&p.IDCreator,
+			&p.Description,
+		);err!=nil{
+			return nil,fmt.Errorf("%s: %w",op,err)
+		}
+		listProjects = append(listProjects, p)
+	}
+	if err:=rows.Err();err!=nil{
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return listProjects,nil
+}

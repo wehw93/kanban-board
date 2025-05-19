@@ -227,3 +227,24 @@ func (s *Server) UpdateProject() http.HandlerFunc {
 		})
 	}
 }
+
+func (s * Server) ListProjects()http.HandlerFunc{
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "http.ListProjects"
+		log:=s.Logger.With(slog.String("op",op))
+		listProjects,err:=s.Svc.ListProjects()
+		if err!=nil{
+			log.Error("failed to read list of projects",sl.Err(err))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "failed to read list of projects",
+			})
+			return
+		}
+		render.JSON(w,r,response.SuccessResponse{
+			Status: http.StatusOK,
+			Message: "projects:",
+			Data:listProjects,
+		})
+	}
+}

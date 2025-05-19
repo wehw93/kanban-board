@@ -69,6 +69,7 @@ func (s *Server) InitRoutes() {
 			r.Get("/read", s.ReadProject())
 			r.Delete("/",s.DeleteProject())
 			r.Put("/",s.UpdateProject())
+			r.Get("/list",s.ListProjects())
 		})
 	})
 }

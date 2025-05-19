@@ -9,4 +9,5 @@ type ProjectRepository interface {
 	Delete(userID int, name string) error
 	UpdateName(name string,project model.Project)error
 	UpdateDescription(project model.Project)error
+	ListProjects()([]model.Project,error)
 }

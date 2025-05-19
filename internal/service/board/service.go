@@ -163,3 +163,23 @@ func (s *Service) DeleteProject(userID int,name string)error{
 	}
 	return nil
 }
+
+func (s*Service)UpdateProjectName(name string,project model.Project)error{
+	const op = "board.service.UpdateProjectName"
+
+	err:=s.store.Project().UpdateName(name,project)
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	return nil
+}
+
+func (s*Service)UpdateProjectDescription(project model.Project)error{
+	const op = "board.service.UpdateProjectDescription"
+
+	err:=s.store.Project().UpdateDescription(project)
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	return nil
+}

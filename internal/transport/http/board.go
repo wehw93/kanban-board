@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 
@@ -79,7 +80,7 @@ func (s *Server) ReadProject() http.HandlerFunc {
 		log := s.Logger.With(slog.String("op", op))
 		var req ReadProjectRequest
 		err := render.DecodeJSON(r.Body, &req)
-		if err!=nil{
+		if err != nil {
 			log.Error("failed to decode request", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusBadRequest,
@@ -88,8 +89,8 @@ func (s *Server) ReadProject() http.HandlerFunc {
 			return
 		}
 
-		log.Info("reading data of project", slog.String("name",req.Name))
-		resp,err := s.Svc.ReadProject(req.Name)
+		log.Info("reading data of project", slog.String("name", req.Name))
+		resp, err := s.Svc.ReadProject(req.Name)
 		if err != nil {
 			log.Error("failed to read project", slog.String("name", req.Name), sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
@@ -105,11 +106,11 @@ func (s *Server) ReadProject() http.HandlerFunc {
 	}
 }
 
-type DeleteProjectRequest struct{
+type DeleteProjectRequest struct {
 	Name string `json:"name" validate:"required"`
 }
 
-func (s *Server) DeleteProject()http.HandlerFunc{
+func (s *Server) DeleteProject() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.DeleteProject"
 		log := s.Logger.With(slog.String("op", op))
@@ -124,7 +125,7 @@ func (s *Server) DeleteProject()http.HandlerFunc{
 		}
 		var req DeleteProjectRequest
 		err := render.DecodeJSON(r.Body, &req)
-		if err!=nil{
+		if err != nil {
 			log.Error("failed to decode request", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusBadRequest,
@@ -133,12 +134,12 @@ func (s *Server) DeleteProject()http.HandlerFunc{
 			return
 		}
 		log.Info("deleting project",
-    		slog.String("name", req.Name),
-    		slog.Int("user_id", userID),
+			slog.String("name", req.Name),
+			slog.Int("user_id", userID),
 		)
 
-		if err := s.Svc.DeleteProject(userID,req.Name); err != nil {
-			log.Error("failed to delete project",sl.Err(err))
+		if err := s.Svc.DeleteProject(userID, req.Name); err != nil {
+			log.Error("failed to delete project", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusInternalServerError,
 				Message: "Failed to delete user",
@@ -148,6 +149,81 @@ func (s *Server) DeleteProject()http.HandlerFunc{
 		render.JSON(w, r, response.SuccessResponse{
 			Status:  http.StatusOK,
 			Message: "User deleted successfully",
+		})
+	}
+}
+
+type UpdateProjectRequest struct {
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+}
+
+func (s *Server) UpdateProject() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "http.UpdateProject"
+		log := s.Logger.With(slog.String("op", op))
+
+		userID, ok := r.Context().Value("userID").(int)
+		if !ok {
+			log.Error("failed to get userID from context")
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "Internal server error",
+			})
+			return
+		}
+
+		name := r.URL.Query().Get("name")
+		if name == "" {
+			log.Error("empty project name in URL")
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusBadRequest,
+				Message: "Project name is required in URL",
+			})
+			return
+		}
+		var req UpdateProjectRequest
+		err := render.DecodeJSON(r.Body, &req)
+		if err != nil {
+			log.Error("failed to decode request", sl.Err(err))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusBadRequest,
+				Message: "Invalid request body",
+			})
+			return
+		}
+		log.Info("updating project",
+			slog.String("original_name", name),
+			slog.Int("user_id", userID),
+			slog.Any("new_data", req),
+		)
+		var updateErrors []error
+		project := model.Project{IDCreator: int64(userID), Name: name}
+		if req.Name != nil {
+			if err := s.Svc.UpdateProjectName(*req.Name, project); err != nil {
+				log.Error("failed to update name", sl.Err(err))
+				updateErrors = append(updateErrors, errors.New("failed to update name"))
+			}
+			project.Name = *req.Name
+		}
+
+		if req.Description != nil {
+			project.Description = *req.Description
+			if err := s.Svc.UpdateProjectDescription(project); err != nil {
+				log.Error("failed to update description", sl.Err(err))
+				updateErrors = append(updateErrors, errors.New("failed to update description"))
+			}
+		}
+		if len(updateErrors) > 0 {
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "partial update failed",
+			})
+			return
+		}
+		render.JSON(w, r, response.SuccessResponse{
+			Status:  http.StatusOK,
+			Message: "Project update succssfully",
 		})
 	}
 }

@@ -99,3 +99,41 @@ func (r *ProjectRepository) Delete(userID int, name string) error {
 	
 	return nil
 }
+
+func (r*ProjectRepository) UpdateName(name string, project model.Project)error{
+	const op = "storage.postgresql.project.updateName"
+
+	res,err:=r.store.db.Exec("UPDATE projects SET name = $1 WHERE name = $2 and id_creator = $3",name,project.Name,project.IDCreator)
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	rowsAffected,err:=res.RowsAffected()
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	if rowsAffected==0{
+		return storage.ErrProjectNotFound
+	}
+	return nil
+}
+
+
+func (r*ProjectRepository) UpdateDescription(project model.Project)error{
+	const op = "storage.postgresql.project.UpdateDescription"
+
+	res,err:=r.store.db.Exec("UPDATE projects SET description = $1 WHERE name = $2 and id_creator = $3",
+	project.Description,
+	project.Name,
+	project.IDCreator)
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	rowsAffected,err:=res.RowsAffected()
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	if rowsAffected==0{
+		return storage.ErrProjectNotFound
+	}
+	return nil
+}

@@ -7,4 +7,6 @@ type ProjectRepository interface {
 	GetByName(name string) (*model.Project, error)
 	GetTasks (projectID int)([]model.Task,error)
 	Delete(userID int, name string) error
+	UpdateName(name string,project model.Project)error
+	UpdateDescription(project model.Project)error
 }

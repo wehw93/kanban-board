@@ -18,4 +18,5 @@ type BoardService interface {
 	UpdateProjectDescription(project model.Project)error
 	UpdateProjectName(name string,project model.Project)error
 	ListProjects()([]model.Project,error)
+	CreateColumn(column * model.Column)error
 }

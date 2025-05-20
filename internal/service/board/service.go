@@ -193,3 +193,12 @@ func (s*Service)ListProjects()([]model.Project,error){
 	}
 	return listProjects,nil
 }
+func (s*Service)CreateColumn(column * model.Column)error{
+	const op = "board.service.CreateColumn"
+
+	err:=s.store.Column().CreateColumn(column)
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	return nil
+}

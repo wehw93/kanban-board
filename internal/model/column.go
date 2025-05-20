@@ -1,7 +1,7 @@
 package model
 
 type Column struct{
-	id int64
-	name string
-	id_project int64
+	ID int64
+	Name string
+	ID_project int64
 }

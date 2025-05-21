@@ -202,3 +202,29 @@ func (s*Service)CreateColumn(column * model.Column)error{
 	}
 	return nil
 }
+
+func (s*Service)ReadColumn(column model.Column) (*response.ReadColumnResponse,error){
+	const op = "board.service.ReadColumn"
+
+	id,err:=s.store.Column().GetID(column)
+	if err!=nil{
+		return nil,fmt.Errorf("%s: %w",op,err)
+	}
+	column.ID = int64(id)
+	resp:=&response.ReadColumnResponse{
+		ID: id,
+		Name: column.Name,
+	}
+	tasks,err:=s.store.Column().GetTasks(column)
+	if err!=nil{
+		return nil,fmt.Errorf("%s: %w",op,err)
+	}
+	for _,t:=range tasks{
+		resp.Tasks = append(resp.Tasks, response.TaskBrief{
+			ID: uint(t.ID),
+			Name: t.Name,
+			Status: t.Status,
+		})
+	}
+	return resp,nil
+}

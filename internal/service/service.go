@@ -14,9 +14,10 @@ type BoardService interface {
 	UpdatePassword(user model.User) error
 	CreateProject(project *model.Project) error
 	ReadProject(name string) (*response.ReadProjectResponse, error)
-	DeleteProject(userID int,name string) error
-	UpdateProjectDescription(project model.Project)error
-	UpdateProjectName(name string,project model.Project)error
-	ListProjects()([]model.Project,error)
-	CreateColumn(column * model.Column)error
+	DeleteProject(userID int, name string) error
+	UpdateProjectDescription(project model.Project) error
+	UpdateProjectName(name string, project model.Project) error
+	ListProjects() ([]model.Project, error)
+	CreateColumn(column *model.Column) error
+	ReadColumn(column model.Column) (*response.ReadColumnResponse,error)
 }

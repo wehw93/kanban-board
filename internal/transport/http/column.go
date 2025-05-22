@@ -1,8 +1,10 @@
 package http
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/render"
 	"github.com/wehw93/kanban-board/internal/lib/http/response"
@@ -58,41 +60,140 @@ func (s *Server) CreateColumn() http.HandlerFunc {
 	}
 }
 
-type ReadColumnRequest struct{
-	Name string `json:"name" validate:"required"`
-	IDProject int `json:"id_project" validate:"required"`
+type ReadColumnRequest struct {
+	Name      string `json:"name" validate:"required"`
+	IDProject int    `json:"id_project" validate:"required"`
 }
 
-
-func (s*Server)ReadColumn()http.HandlerFunc{
+func (s *Server) ReadColumn() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.ReadColumn"
 
-		log:=s.Logger.With("op",op)
+		log := s.Logger.With("op", op)
 		var req ReadColumnRequest
-		err:=render.DecodeJSON(r.Body,&req)
-		if err!=nil{
-			log.Error("failed to decode request body",sl.Err(err))
-			render.JSON(w,r,response.ErrorResponse{
-				Status: http.StatusBadRequest,
+		err := render.DecodeJSON(r.Body, &req)
+		if err != nil {
+			log.Error("failed to decode request body", sl.Err(err))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusBadRequest,
 				Message: "invalid request body",
 			})
 		}
-		column:=model.Column{
-			Name: req.Name,
+		column := model.Column{
+			Name:       req.Name,
 			ID_project: int64(req.IDProject),
 		}
-		resp,err:=s.Svc.ReadColumn(column)
-		if err!=nil{
-			log.Error("failed to read column",sl.Err(err))
-			render.JSON(w,r,response.ErrorResponse{
-				Status: http.StatusBadRequest,
+		resp, err := s.Svc.ReadColumn(column)
+		if err != nil {
+			log.Error("failed to read column", sl.Err(err))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusBadRequest,
 				Message: "failed to read column",
 			})
 		}
-		render.JSON(w,r,response.SuccessResponse{
+		render.JSON(w, r, response.SuccessResponse{
 			Status: http.StatusOK,
-			Data: resp,
+			Data:   resp,
+		})
+	}
+}
+
+type DeleteColumnRequest struct {
+	ID int `json:"id" validate:"required"`
+}
+
+func (s *Server) DeleteColumn() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "http.DeleteColumn"
+		log := s.Logger.With(slog.String("op", op))
+		var req DeleteColumnRequest
+		err := render.DecodeJSON(r.Body, &req)
+		if err != nil {
+			log.Error("failed to decode request", sl.Err(err))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusBadRequest,
+				Message: "Invalid request body",
+			})
+			return
+		}
+		log.Info("deleting column",
+			slog.Int("column_id", req.ID),
+		)
+
+		if err := s.Svc.DeleteColumn(req.ID); err != nil {
+			log.Error("failed to delete column", sl.Err(err))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "Failed to delete column",
+			})
+			return
+		}
+		render.JSON(w, r, response.SuccessResponse{
+			Status:  http.StatusOK,
+			Message: "Column deleted successfully",
+		})
+	}
+}
+
+type UpdateColumnRequest struct {
+	Name *string `json:"name"`
+}
+
+func (s *Server) UpdateColumn() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "http.UpdateColumn"
+		log := s.Logger.With(slog.String("op", op))
+
+		id, err := strconv.Atoi(r.URL.Query().Get("id"))
+		if err != nil {
+			log.Error("failed to get id from url", err)
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "failed to get id rom url",
+			})
+			return
+		}
+		if id == 0 {
+			log.Error("empty column id in URL")
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusBadRequest,
+				Message: "column id is required in URL",
+			})
+			return
+		}
+		var req UpdateColumnRequest
+		err = render.DecodeJSON(r.Body, &req)
+		if err != nil {
+			log.Error("failed to decode request", sl.Err(err))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusBadRequest,
+				Message: "Invalid request body",
+			})
+			return
+		}
+		log.Info("updating column",
+			slog.Int("id", id),
+			slog.Any("new_data", req),
+		)
+		var updateErrors []error
+		column := model.Column{ID: int64(id)}
+		if req.Name != nil {
+			if err := s.Svc.UpdateColumnName(column, *req.Name); err != nil {
+				log.Error("failed to update name", sl.Err(err))
+				updateErrors = append(updateErrors, errors.New("failed to update name"))
+			}
+			column.Name = *req.Name
+		}
+		if len(updateErrors) > 0 {
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "partial update failed",
+			})
+			return
+		}
+		render.JSON(w, r, response.SuccessResponse{
+			Status:  http.StatusOK,
+			Message: "column update succssfully",
 		})
 	}
 }

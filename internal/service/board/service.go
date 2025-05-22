@@ -30,7 +30,7 @@ func (s *Service) LoginUser(email string, password string) (string, error) {
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
 			slog.Warn("user not found", err)
-			return "", fmt.Errorf("%s: %w", op, "Invalid credentials")
+			return "", fmt.Errorf("%s: %w", op, errors.New("Invalid credentials"))
 		}
 		slog.Warn("failed to get user", err)
 		return "", fmt.Errorf("%s: %w", op, err)
@@ -227,4 +227,24 @@ func (s*Service)ReadColumn(column model.Column) (*response.ReadColumnResponse,er
 		})
 	}
 	return resp,nil
+}
+
+func (s*Service)DeleteColumn(id int)error{
+	const op = "board.service.DeleteColumn"
+
+	err:=s.store.Column().DeleteColumn(id)
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	return nil
+}
+
+func (s*Service)UpdateColumnName(column model.Column, name string)error{
+	const op = "board.service.UpdateColumnName"
+
+	err:=s.store.Column().UpdateColumnName(column,name)
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	return nil
 }

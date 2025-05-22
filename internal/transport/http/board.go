@@ -142,13 +142,13 @@ func (s *Server) DeleteProject() http.HandlerFunc {
 			log.Error("failed to delete project", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusInternalServerError,
-				Message: "Failed to delete user",
+				Message: "Failed to delete project",
 			})
 			return
 		}
 		render.JSON(w, r, response.SuccessResponse{
 			Status:  http.StatusOK,
-			Message: "User deleted successfully",
+			Message: "project deleted successfully",
 		})
 	}
 }

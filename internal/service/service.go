@@ -20,4 +20,6 @@ type BoardService interface {
 	ListProjects() ([]model.Project, error)
 	CreateColumn(column *model.Column) error
 	ReadColumn(column model.Column) (*response.ReadColumnResponse,error)
+	DeleteColumn(id int)error
+	UpdateColumnName(column model.Column,name string)error
 }

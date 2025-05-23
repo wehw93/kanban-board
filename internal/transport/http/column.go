@@ -32,7 +32,7 @@ func (s *Server) CreateColumn() http.HandlerFunc {
 		}
 		log.Info("create column request",
 			slog.Int("project_id", req.ProjectID),
-			slog.String("project_name", req.Name),
+			slog.String("column_name", req.Name),
 		)
 		column := &model.Column{
 			Name:       req.Name,
@@ -55,7 +55,7 @@ func (s *Server) CreateColumn() http.HandlerFunc {
 
 		render.JSON(w, r, response.SuccessResponse{
 			Status: http.StatusCreated,
-			Data:   map[string]int64{"id": column.ID},
+			Data:  column,
 		})
 	}
 }

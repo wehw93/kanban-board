@@ -248,3 +248,13 @@ func (s*Service)UpdateColumnName(column model.Column, name string)error{
 	}
 	return nil
 }
+
+func (s*Service)CreateTask(task *model.Task)error{
+	const op = "board.service.CreateTask"
+
+	err:=s.store.Task().CreateTask(task)
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	return nil
+}

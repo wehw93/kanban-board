@@ -5,7 +5,7 @@ CREATE TABLE tasks(
     description TEXT NOT NULL,
     date_of_create DATE NOT NULL,
     date_of_execution DATE,
-    id_executor BIGINT NOT NULL,
+    id_executor BIGINT,
     id_creator BIGINT NOT NULL,
     status TEXT NOT NULL ,
     FOREIGN KEY(id_column) REFERENCES columns(id) ON DELETE CASCADE,

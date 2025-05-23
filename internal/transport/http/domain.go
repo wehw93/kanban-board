@@ -77,6 +77,13 @@ func (s *Server) InitRoutes() {
 			r.Delete("/",s.DeleteColumn())
 			r.Put("/",s.UpdateColumn())
 		})
+		r.Route("/tasks",func (r chi.Router){
+			r.Post("/",s.CreateTask())
+			/*r.Get("/",s.ReadTask())
+			r.Delete("/",s.DeleteTask())
+			r.Put("/",s.UpdateTask())
+			*/
+		})
 	})
 }
 

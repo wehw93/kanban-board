@@ -49,7 +49,6 @@ func (s *Server) CreateProject() http.HandlerFunc {
 		}
 		if err := s.Svc.CreateProject(project); err != nil {
 			log.Error("failed to create project",
-				slog.Int("user_id", userID),
 				sl.Err(err),
 			)
 			render.JSON(w, r, response.ErrorResponse{
@@ -65,7 +64,7 @@ func (s *Server) CreateProject() http.HandlerFunc {
 
 		render.JSON(w, r, response.SuccessResponse{
 			Status: http.StatusCreated,
-			Data:   map[string]int64{"id": project.ID},
+			Data:   project,
 		})
 	}
 }

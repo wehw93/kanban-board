@@ -22,4 +22,5 @@ type BoardService interface {
 	ReadColumn(column model.Column) (*response.ReadColumnResponse,error)
 	DeleteColumn(id int)error
 	UpdateColumnName(column model.Column,name string)error
+	CreateTask(task * model.Task) error
 }

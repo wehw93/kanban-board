@@ -15,4 +15,5 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 	ErrProjectNotFound = errors.New("project not found")
 	ErrColumnNotFound = errors.New("column not found")
+	ErrTaskNotFound = errors.New("task not found")
 )

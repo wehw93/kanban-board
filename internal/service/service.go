@@ -23,4 +23,9 @@ type BoardService interface {
 	DeleteColumn(id int)error
 	UpdateColumnName(column model.Column,name string)error
 	CreateTask(task * model.Task) error
+	ReadTask(task*model.Task)error
+	DeleteTask(userID int, id int) error
+	UpdateTaskName(task * model.Task)error
+	UpdateTaskDescription(task * model.Task)error
+	UpdateTaskColumn(task * model.Task)error
 }

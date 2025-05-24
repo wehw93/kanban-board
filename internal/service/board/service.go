@@ -258,3 +258,53 @@ func (s*Service)CreateTask(task *model.Task)error{
 	}
 	return nil
 }
+
+func (s*Service)ReadTask(task *model.Task)error{
+	const op = "board.service.ReadTask"
+
+	err:=s.store.Task().ReadTask(task)
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	return nil
+}
+
+func (s*Service)DeleteTask(IDuser int,id int)error{
+	const op = "board.service.DeleteTask"
+
+	err:=s.store.Task().DeleteTask(IDuser,id)
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	return nil
+}
+
+func (s*Service) UpdateTaskName(task *model.Task)error{
+	const op = "board.service.UpdateTaskName"
+
+	err:=s.store.Task().UpdateTaskName(task)
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	return nil
+}
+
+func (s*Service) UpdateTaskColumn(task *model.Task)error{
+	const op = "board.service.UpdateTaskColumn"
+
+	err:=s.store.Task().UpdateTaskColumn(task)
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	return nil
+}
+
+func (s*Service) UpdateTaskDescription(task *model.Task)error{
+	const op = "board.service.UpdateTaskDescription"
+
+	err:=s.store.Task().UpdateTaskDescription(task)
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
+	return nil
+}

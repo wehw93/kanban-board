@@ -78,89 +78,88 @@ func (r *ProjectRepository) GetTasks(projectID int) ([]model.Task, error) {
 
 func (r *ProjectRepository) Delete(userID int, name string) error {
 	const op = "storage.postgresql.project.delete"
-	
+
 	res, err := r.store.db.Exec(
-		"DELETE FROM projects WHERE id_creator = $1 and name = $2", 
+		"DELETE FROM projects WHERE id_creator = $1 and name = $2",
 		userID,
 		name,
 	)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
-	
+
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
-	
+
 	if rowsAffected == 0 {
 		return fmt.Errorf("%s: %w", op, storage.ErrProjectNotFound)
 	}
-	
+
 	return nil
 }
 
-func (r*ProjectRepository) UpdateName(name string, project model.Project)error{
+func (r *ProjectRepository) UpdateName(name string, project model.Project) error {
 	const op = "storage.postgresql.project.updateName"
 
-	res,err:=r.store.db.Exec("UPDATE projects SET name = $1 WHERE name = $2 and id_creator = $3",name,project.Name,project.IDCreator)
-	if err!=nil{
-		return fmt.Errorf("%s: %w",op,err)
+	res, err := r.store.db.Exec("UPDATE projects SET name = $1 WHERE name = $2 and id_creator = $3", name, project.Name, project.IDCreator)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
 	}
-	rowsAffected,err:=res.RowsAffected()
-	if err!=nil{
-		return fmt.Errorf("%s: %w",op,err)
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
 	}
-	if rowsAffected==0{
+	if rowsAffected == 0 {
 		return storage.ErrProjectNotFound
 	}
 	return nil
 }
 
-
-func (r*ProjectRepository) UpdateDescription(project model.Project)error{
+func (r *ProjectRepository) UpdateDescription(project model.Project) error {
 	const op = "storage.postgresql.project.UpdateDescription"
 
-	res,err:=r.store.db.Exec("UPDATE projects SET description = $1 WHERE name = $2 and id_creator = $3",
-	project.Description,
-	project.Name,
-	project.IDCreator)
-	if err!=nil{
-		return fmt.Errorf("%s: %w",op,err)
+	res, err := r.store.db.Exec("UPDATE projects SET description = $1 WHERE name = $2 and id_creator = $3",
+		project.Description,
+		project.Name,
+		project.IDCreator)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
 	}
-	rowsAffected,err:=res.RowsAffected()
-	if err!=nil{
-		return fmt.Errorf("%s: %w",op,err)
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
 	}
-	if rowsAffected==0{
+	if rowsAffected == 0 {
 		return storage.ErrProjectNotFound
 	}
 	return nil
 }
 
-func (r*ProjectRepository) ListProjects()([]model.Project,error){
+func (r *ProjectRepository) ListProjects() ([]model.Project, error) {
 	const op = "storage.postgresql.project.ListProjects"
 
 	var listProjects []model.Project
-	rows,err:=r.store.db.Query("SELECT * FROM projects")
-	if err!=nil{
-		return nil,fmt.Errorf("%s: %w",op,err)
+	rows, err := r.store.db.Query("SELECT * FROM projects")
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	defer rows.Close()
-	for rows.Next(){
+	for rows.Next() {
 		var p model.Project
-		if err:=rows.Scan(
+		if err := rows.Scan(
 			&p.ID,
 			&p.Name,
 			&p.IDCreator,
 			&p.Description,
-		);err!=nil{
-			return nil,fmt.Errorf("%s: %w",op,err)
+		); err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
 		}
 		listProjects = append(listProjects, p)
 	}
-	if err:=rows.Err();err!=nil{
+	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return listProjects,nil
+	return listProjects, nil
 }

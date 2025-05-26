@@ -60,7 +60,7 @@ func (s *Server) CreateTask() http.HandlerFunc {
 			log.Error("failed to create task", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusUnprocessableEntity,
-				Message: "failed to create project",
+				Message: "failed to create task",
 			})
 			return
 		}
@@ -160,7 +160,7 @@ func (s *Server) DeleteTask() http.HandlerFunc {
 type UpdateTaskRequest struct {
 	Name        *string `json:"name"`
 	Description *string `json:"description"`
-	id_column   *int    `json:"id_column"`
+	Id_column   *int    `json:"id_column"`
 }
 
 func (s *Server) UpdateTask() http.HandlerFunc {
@@ -215,22 +215,23 @@ func (s *Server) UpdateTask() http.HandlerFunc {
 		task := &model.Task{
 			ID:          int64(id),
 			ID_executor: sql.NullInt64{Int64: int64(userID), Valid: userID != 0},
-			Description: *req.Description,
-			ID_column:   int64(*req.id_column),
 		}
 		if req.Name != nil {
+			task.ID_column=   int64(*req.Id_column)
 			if err := s.Svc.UpdateTaskName(task); err != nil {
 				log.Error("failed to update name", sl.Err(err))
 				updateErrors = append(updateErrors, errors.New("failed to update name"))
 			}
 		}
 		if req.Description!=nil{
+			task.Description =*req.Description
 			if err:=s.Svc.UpdateTaskDescription(task);err!=nil{
 				log.Error("failed to update description", sl.Err(err))
 				updateErrors = append(updateErrors, errors.New("failed to update description"))
 			}
 		}
-		if req.id_column!=nil{
+		if req.Id_column!=nil{
+			task.ID_column = int64(*req.Id_column)
 			if err:=s.Svc.UpdateTaskColumn(task);err!=nil{
 				log.Error("failed to update column id", sl.Err(err))
 				updateErrors = append(updateErrors, errors.New("failed to update column id"))

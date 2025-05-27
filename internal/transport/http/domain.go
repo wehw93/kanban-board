@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	httpSwagger "github.com/swaggo/http-swagger"
 
 	"github.com/wehw93/kanban-board/internal/config"
 	"github.com/wehw93/kanban-board/internal/lib/http/response"
@@ -82,7 +83,11 @@ func (s *Server) InitRoutes() {
 			r.Get("/",s.ReadTask())
 			r.Delete("/",s.DeleteTask())
 			r.Put("/",s.UpdateTask())
+			s.Router.Get("/swagger/*", httpSwagger.Handler(
+				httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
+			))
 		})
+		s.Router.Get("/swagger/*", httpSwagger.WrapHandler)
 	})
 }
 

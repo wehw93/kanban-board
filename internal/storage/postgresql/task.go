@@ -28,6 +28,10 @@ func (r *TaskRepository) CreateTask(task *model.Task) error {
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
+	err=r.logging(int(task.ID),"create task")
+	if err!=nil{
+		return fmt.Errorf("%s: %w",op,err)
+	}
 	return nil
 }
 
@@ -147,6 +151,10 @@ func (r *TaskRepository) UpdateTaskColumn(task *model.Task) error {
 	case newIdColumn == int64(inProgressColumnID):
 		newStatus = "in_progress"
 		slog.Info("NEW STATUS: ",newStatus, inProgressColumnID)
+		err=r.logging(int(task.ID),"switch status from " + "todo" + "to "+ newStatus)
+		if err != nil {
+			return fmt.Errorf("%s: %w", op, err)
+		}
 	case newIdColumn == int64(doneColumnID):
 		newStatus = "done"
 		task.Date_of_execution = sql.NullTime{
@@ -154,10 +162,18 @@ func (r *TaskRepository) UpdateTaskColumn(task *model.Task) error {
 			Valid: true,
 		}
 		slog.Info("NEW STATUS: ",newStatus, doneColumnID)
+		err =r.logging(int(task.ID),"switch status from " + "in_progress" + "to "+ newStatus)
+		if err != nil {
+			return fmt.Errorf("%s: %w", op, err)
+		}
 	default:
 		newStatus = "todo"
 		task.Date_of_execution = sql.NullTime{Valid: false}
 		slog.Info("NEW STATUS: ",newStatus, newIdColumn)
+		err= r.logging(int(task.ID),"switch status from " + task.Status + "to "+ newStatus)
+		if err != nil {
+			return fmt.Errorf("%s: %w", op, err)
+		}
 	}
 	res, err := r.store.db.Exec(`UPDATE tasks 
 	SET status = $1, 
@@ -180,4 +196,50 @@ func (r *TaskRepository) UpdateTaskColumn(task *model.Task) error {
 	}
 
 	return nil
+}
+
+func (r*TaskRepository)logging (id_task int, info string) error{
+	const op = "storage.postgres.Task.logging"
+	var id int
+	err:=r.store.db.QueryRow(`
+		INSERT INTO logs 
+		(id_task,date_of_operation,info) 
+		VALUES($1,$2,$3) 
+		RETURNING id
+	`,id_task,
+	sql.NullTime{
+		Time:  time.Now(),
+		Valid: true,
+	},info).Scan(&id)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (r*TaskRepository) GetLogsTask(id_task int)([]model.Task_log,error){
+	const op = "storage.Postgresql.Task.GetLogsTask"
+
+	var logs []model.Task_log
+	rows,err:=r.store.db.Query("SELECT * FROM logs WHERE id_task = $1",id_task)
+	if err!=nil{
+		return nil,fmt.Errorf("%s; %w",op,err)
+	}
+	defer rows.Close()
+	for rows.Next(){
+		var l model.Task_log
+		if err=rows.Scan(
+			&l.ID,
+			&l.ID_Task,
+			&l.Date_of_operation,
+			&l.Info,
+			);err!=nil{
+			return nil,fmt.Errorf("%s: %w",op,err)
+		}
+		logs = append(logs, l)
+	}
+	if err = rows.Err();err!=nil{
+		return nil,fmt.Errorf("%s: %w",op,err)
+	}
+	return logs,nil
 }

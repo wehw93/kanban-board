@@ -1,0 +1,846 @@
+definitions:
+  http.CreateProjectRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  http.CreateTaskRequest:
+    properties:
+      description:
+        type: string
+      id_column:
+        type: integer
+      name:
+        type: string
+    required:
+    - description
+    - id_column
+    - name
+    type: object
+  http.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  http.DeleteColumnRequest:
+    properties:
+      id:
+        type: integer
+    required:
+    - id
+    type: object
+  http.DeleteProjectRequest:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  http.DeleteTaskRequest:
+    properties:
+      id:
+        type: integer
+    required:
+    - id
+    type: object
+  http.LoginUserRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  http.ReadColumnRequest:
+    properties:
+      id_project:
+        type: integer
+      name:
+        type: string
+    required:
+    - id_project
+    - name
+    type: object
+  http.ReadProjectRequest:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  http.ReadTaskRequest:
+    properties:
+      id:
+        type: integer
+    required:
+    - id
+    type: object
+  http.UpdateColumnRequest:
+    properties:
+      name:
+        type: string
+    type: object
+  http.UpdateProjectRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  http.UpdateTaskRequest:
+    properties:
+      description:
+        type: string
+      id_column:
+        type: integer
+      name:
+        type: string
+    type: object
+  http.UpdateUserRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  model.Column:
+    properties:
+      id:
+        type: integer
+      id_project:
+        type: integer
+      name:
+        type: string
+    type: object
+  model.Project:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      id_creator:
+        type: integer
+      name:
+        type: string
+    type: object
+  model.Task:
+    properties:
+      date_of_create:
+        type: string
+      date_of_execution:
+        format: date-time
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      id_column:
+        type: integer
+      id_creator:
+        type: integer
+      id_executor:
+        type: integer
+      name:
+        type: string
+      status:
+        type: string
+    type: object
+  model.Task_log:
+    properties:
+      date_of_operation:
+        type: string
+      id:
+        type: integer
+      id_Task:
+        type: integer
+      info:
+        type: string
+    type: object
+  model.User:
+    properties:
+      email:
+        type: string
+      encrypted_password:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  response.ErrorResponse:
+    properties:
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+  response.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: API для управления проектами и задачами
+  title: Kanban Board API
+  version: "1.0"
+paths:
+  /api/columns:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет колонку по её ID
+      parameters:
+      - description: ID колонки
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.DeleteColumnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Колонка успешно удалена
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Ошибка сервера при удалении колонки
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удаление колонки
+      tags:
+      - Columns
+    get:
+      consumes:
+      - application/json
+      description: Возвращает информацию о колонке по имени и ID проекта
+      parameters:
+      - description: Параметры запроса
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.ReadColumnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Информация о колонке
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Column'
+              type: object
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Колонка не найдена
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получение информации о колонке
+      tags:
+      - Columns
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные колонки по её ID
+      parameters:
+      - description: ID колонки
+        in: query
+        name: id
+        required: true
+        type: integer
+      - description: Новые данные колонки
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateColumnRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Колонка успешно обновлена
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Ошибка сервера при обновлении колонки
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновление информации о колонке
+      tags:
+      - Columns
+  /api/projects:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет проект по его названию (только для создателя проекта)
+      parameters:
+      - description: Имя проекта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.DeleteProjectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Проект успешно удален
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Не авторизован
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Нет прав на удаление
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить проект
+      tags:
+      - Projects
+    post:
+      consumes:
+      - application/json
+      description: Создает новый проект для текущего пользователя
+      parameters:
+      - description: Данные проекта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateProjectRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Проект успешно создан
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Project'
+              type: object
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Не авторизован
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "422":
+          description: Ошибка при создании проекта
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать новый проект
+      tags:
+      - Projects
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные проекта (название и/или описание)
+      parameters:
+      - description: Название проекта для обновления
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: Новые данные проекта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateProjectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Проект успешно обновлен
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Не авторизован
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Нет прав на обновление
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновить проект
+      tags:
+      - Projects
+  /api/projects/list:
+    get:
+      description: Возвращает список всех проектов пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список проектов
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Project'
+                  type: array
+              type: object
+        "401":
+          description: Не авторизован
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Список проектов
+      tags:
+      - Projects
+  /api/projects/read:
+    post:
+      consumes:
+      - application/json
+      description: Возвращает информацию о проекте по его названию
+      parameters:
+      - description: Имя проекта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.ReadProjectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный запрос
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Project'
+              type: object
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Проект не найден
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить проект по имени
+      tags:
+      - Projects
+  /api/tasks:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет задачу по ID
+      parameters:
+      - description: ID задачи
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.DeleteTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Задача успешно удалена
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Ошибка при удалении задачи
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удаление задачи
+      tags:
+      - Tasks
+    get:
+      consumes:
+      - application/json
+      description: Возвращает информацию о задаче по ID
+      parameters:
+      - description: ID задачи
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.ReadTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Информация о задаче
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Task'
+              type: object
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Задача не найдена
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получение задачи
+      tags:
+      - Tasks
+    post:
+      consumes:
+      - application/json
+      description: Создает новую задачу в колонке
+      parameters:
+      - description: Данные задачи
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Задача успешно создана
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Task'
+              type: object
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "422":
+          description: Ошибка при создании задачи
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создание новой задачи
+      tags:
+      - Tasks
+    put:
+      consumes:
+      - application/json
+      description: Обновляет имя, описание или колонку задачи
+      parameters:
+      - description: ID задачи
+        in: query
+        name: id
+        required: true
+        type: integer
+      - description: Обновленные данные задачи
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Задача успешно обновлена
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Ошибка при обновлении задачи
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновление задачи
+      tags:
+      - Tasks
+  /api/tasks/logs:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает логи действий по задаче
+      parameters:
+      - description: ID задачи
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Логи задачи
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Task_log'
+                  type: array
+              type: object
+        "400":
+          description: Неверный ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Ошибка при получении логов
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получение логов задачи
+      tags:
+      - Tasks
+  /api/users/me:
+    delete:
+      description: Удаляет текущего авторизованного пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Пользователь успешно удален
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "401":
+          description: Не авторизован
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Ошибка при удалении
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить пользователя
+      tags:
+      - Users
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Данные пользователя
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "401":
+          description: Не авторизован
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить данные текущего пользователя
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Обновляет email и/или пароль пользователя
+      parameters:
+      - description: Обновляемые данные
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Данные успешно обновлены
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Не авторизован
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Ошибка при обновлении
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновить данные пользователя
+      tags:
+      - Users
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Вход в систему, возвращает JWT токен
+      parameters:
+      - description: Учетные данные
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.LoginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешная аутентификация
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  properties:
+                    token:
+                      type: string
+                  type: object
+              type: object
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Неверные учетные данные
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Аутентификация пользователя
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового пользователя в системе
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Пользователь успешно создан
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "422":
+          description: Ошибка при создании пользователя
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Регистрация нового пользователя
+      tags:
+      - Auth
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

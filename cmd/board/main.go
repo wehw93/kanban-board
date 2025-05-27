@@ -1,11 +1,17 @@
 package main
 
-//
+// @title Kanban Board API
+// @version 1.0
+// @description API для управления проектами и задачами
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @host localhost:8080
 import (
 	"log/slog"
 	"os"
-
+	_ "github.com/wehw93/kanban-board/docs"
 	"github.com/wehw93/kanban-board/internal/config"
 	"github.com/wehw93/kanban-board/internal/lib/logger/sl"
 	"github.com/wehw93/kanban-board/internal/service/board"

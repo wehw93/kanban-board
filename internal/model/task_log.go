@@ -1,8 +1,8 @@
 package model
 
 type Task_log struct {
-	id                int64
-	id_task           int64
-	date_of_operation string
-	info              string
+	ID                int64
+	ID_Task           int64
+	Date_of_operation string
+	Info              string
 }

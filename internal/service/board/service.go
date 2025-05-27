@@ -308,3 +308,12 @@ func (s*Service) UpdateTaskDescription(task *model.Task)error{
 	}
 	return nil
 }
+
+func (s*Service)GetLogsTask(id_task int) ([]model.Task_log,error){
+	const op = "service.board.GetLogsTask"
+	logs,err:=s.store.Task().GetLogsTask(id_task)
+	if err!=nil{
+		return nil,fmt.Errorf("%s: %w",op,err)
+	}
+	return logs,nil
+}

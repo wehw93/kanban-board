@@ -28,4 +28,5 @@ type BoardService interface {
 	UpdateTaskName(task * model.Task)error
 	UpdateTaskDescription(task * model.Task)error
 	UpdateTaskColumn(task * model.Task)error
+	GetLogsTask(id_task int) ([]model.Task_log,error)
 }

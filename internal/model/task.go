@@ -8,8 +8,8 @@ type Task struct{
 	Name string
 	Description string
 	Date_of_create string
-	Date_of_execution sql.NullTime
-	ID_executor sql.NullInt64
+	Date_of_execution sql.NullTime `json:"date_of_execution" swaggertype:"string" format:"date-time"`
+	ID_executor sql.NullInt64 `json:"id_executor" swaggertype:"integer"`
 	ID_creator int64
 	Status string
 }

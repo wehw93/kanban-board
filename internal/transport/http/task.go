@@ -19,7 +19,18 @@ type CreateTaskRequest struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description" validate:"required"`
 }
-
+// CreateTask godoc
+// @Summary Создание новой задачи
+// @Description Создает новую задачу в колонке
+// @Tags Tasks
+// @Accept json
+// @Produce json
+// @Param input body CreateTaskRequest true "Данные задачи"
+// @Success 200 {object} response.SuccessResponse{data=model.Task} "Задача успешно создана"
+// @Failure 400 {object} response.ErrorResponse "Неверный формат запроса"
+// @Failure 422 {object} response.ErrorResponse "Ошибка при создании задачи"
+// @Security BearerAuth
+// @Router /api/tasks [post]
 func (s *Server) CreateTask() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.CreateTask"
@@ -75,7 +86,18 @@ func (s *Server) CreateTask() http.HandlerFunc {
 type ReadTaskRequest struct {
 	ID int `json:"id" validate:"required"`
 }
-
+// ReadTask godoc
+// @Summary Получение задачи
+// @Description Возвращает информацию о задаче по ID
+// @Tags Tasks
+// @Accept json
+// @Produce json
+// @Param input body ReadTaskRequest true "ID задачи"
+// @Success 200 {object} response.SuccessResponse{data=model.Task} "Информация о задаче"
+// @Failure 400 {object} response.ErrorResponse "Неверный формат запроса"
+// @Failure 500 {object} response.ErrorResponse "Задача не найдена"
+// @Security BearerAuth
+// @Router /api/tasks [get]
 func (s *Server) ReadTask() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.ReadTask"
@@ -113,7 +135,18 @@ func (s *Server) ReadTask() http.HandlerFunc {
 type DeleteTaskRequest struct {
 	ID int `json:"id" validate:"required"`
 }
-
+// DeleteTask godoc
+// @Summary Удаление задачи
+// @Description Удаляет задачу по ID
+// @Tags Tasks
+// @Accept json
+// @Produce json
+// @Param input body DeleteTaskRequest true "ID задачи"
+// @Success 200 {object} response.SuccessResponse "Задача успешно удалена"
+// @Failure 400 {object} response.ErrorResponse "Неверный формат запроса"
+// @Failure 500 {object} response.ErrorResponse "Ошибка при удалении задачи"
+// @Security BearerAuth
+// @Router /api/tasks [delete]
 func (s *Server) DeleteTask() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.DeleteTask"
@@ -162,7 +195,19 @@ type UpdateTaskRequest struct {
 	Description *string `json:"description"`
 	Id_column   *int    `json:"id_column"`
 }
-
+// UpdateTask godoc
+// @Summary Обновление задачи
+// @Description Обновляет имя, описание или колонку задачи
+// @Tags Tasks
+// @Accept json
+// @Produce json
+// @Param id query int true "ID задачи"
+// @Param input body UpdateTaskRequest true "Обновленные данные задачи"
+// @Success 200 {object} response.SuccessResponse "Задача успешно обновлена"
+// @Failure 400 {object} response.ErrorResponse "Неверный формат запроса"
+// @Failure 500 {object} response.ErrorResponse "Ошибка при обновлении задачи"
+// @Security BearerAuth
+// @Router /api/tasks [put]
 func (s *Server) UpdateTask() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.UpdateTask"
@@ -248,6 +293,49 @@ func (s *Server) UpdateTask() http.HandlerFunc {
 		render.JSON(w, r, response.SuccessResponse{
 			Status:  http.StatusOK,
 			Message: "task update succssfully",
+		})
+	}
+}
+// GetLogsTask godoc
+// @Summary Получение логов задачи
+// @Description Возвращает логи действий по задаче
+// @Tags Tasks
+// @Accept json
+// @Produce json
+// @Param id query int true "ID задачи"
+// @Success 200 {object} response.SuccessResponse{data=[]model.Task_log} "Логи задачи"
+// @Failure 400 {object} response.ErrorResponse "Неверный ID"
+// @Failure 500 {object} response.ErrorResponse "Ошибка при получении логов"
+// @Security BearerAuth
+// @Router /api/tasks/logs [get]
+func (s*Server) GetLogsTask()http.HandlerFunc{
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "http.GetLogsTask"
+
+		log:=s.Logger.With(slog.String("op",op))
+
+		id_task, err := strconv.Atoi(r.URL.Query().Get("id"))
+		if err != nil {
+			log.Error("failed to conv id",sl.Err(err))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusBadRequest,
+				Message: "bad request",
+			})
+			return
+		}
+		logs,err:=s.Svc.GetLogsTask(id_task)
+		if err!=nil{
+			log.Error("failed to get logs task",sl.Err(err))
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "failed to get logs task",
+			})
+			return
+		}
+		render.JSON(w,r,response.SuccessResponse{
+			Status:http.StatusOK,
+			Message: "logs of task id:"+ strconv.Itoa(id_task),
+			Data: logs,
 		})
 	}
 }

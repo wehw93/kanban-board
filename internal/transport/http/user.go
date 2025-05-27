@@ -18,7 +18,25 @@ type CreateUserRequest struct {
 }
 
 
+// @title Kanban Board API
+// @version 1.0
+// @description API для управления пользователями и аутентификации
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
+// CreateUser godoc
+// @Summary Регистрация нового пользователя
+// @Description Создает нового пользователя в системе
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param input body CreateUserRequest true "Данные пользователя"
+// @Success 201 {object} response.SuccessResponse{data=model.User} "Пользователь успешно создан"
+// @Failure 400 {object} response.ErrorResponse "Неверный формат запроса"
+// @Failure 422 {object} response.ErrorResponse "Ошибка при создании пользователя"
+// @Router /auth/register [post]
 func (s *Server) CreateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.CreateUser"
@@ -69,7 +87,17 @@ type LoginUserRequest struct {
 	Email    string `json:"email" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
-
+// LoginUser godoc
+// @Summary Аутентификация пользователя
+// @Description Вход в систему, возвращает JWT токен
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param input body LoginUserRequest true "Учетные данные"
+// @Success 200 {object} response.SuccessResponse{data=object{token=string}} "Успешная аутентификация"
+// @Failure 400 {object} response.ErrorResponse "Неверный формат запроса"
+// @Failure 401 {object} response.ErrorResponse "Неверные учетные данные"
+// @Router /auth/login [post]
 func (s *Server) LoginUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.LoginUser"
@@ -101,7 +129,15 @@ func (s *Server) LoginUser() http.HandlerFunc {
 		})
 	}
 }
-
+// ReadUser godoc
+// @Summary Получить данные текущего пользователя
+// @Tags Users
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} response.SuccessResponse{data=model.User} "Данные пользователя"
+// @Failure 401 {object} response.ErrorResponse "Не авторизован"
+// @Failure 404 {object} response.ErrorResponse "Пользователь не найден"
+// @Router /api/users/me [get]
 func (s *Server) ReadUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.ReadUser"
@@ -132,7 +168,19 @@ func (s *Server) ReadUser() http.HandlerFunc {
 		})
 	}
 }
-
+// UpdateUser godoc
+// @Summary Обновить данные пользователя
+// @Description Обновляет email и/или пароль пользователя
+// @Tags Users
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param input body UpdateUserRequest true "Обновляемые данные"
+// @Success 200 {object} response.SuccessResponse "Данные успешно обновлены"
+// @Failure 400 {object} response.ErrorResponse "Неверный формат запроса"
+// @Failure 401 {object} response.ErrorResponse "Не авторизован"
+// @Failure 500 {object} response.ErrorResponse "Ошибка при обновлении"
+// @Router /api/users/me [put]
 func (s *Server) DeleteUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.DeleteUser"
@@ -169,7 +217,16 @@ type UpdateUserRequest struct {
 	Email    *string `json:"email"`
 	Password *string `json:"password"`
 }
-
+// DeleteUser godoc
+// @Summary Удалить пользователя
+// @Description Удаляет текущего авторизованного пользователя
+// @Tags Users
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} response.SuccessResponse "Пользователь успешно удален"
+// @Failure 401 {object} response.ErrorResponse "Не авторизован"
+// @Failure 500 {object} response.ErrorResponse "Ошибка при удалении"
+// @Router /api/users/me [delete]
 func (s *Server) UpdateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.UpdateUser"

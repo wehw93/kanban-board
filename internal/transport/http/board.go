@@ -15,7 +15,19 @@ type CreateProjectRequest struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description"`
 }
-
+// CreateProject godoc
+// @Summary Создать новый проект
+// @Description Создает новый проект для текущего пользователя
+// @Tags Projects
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param input body CreateProjectRequest true "Данные проекта"
+// @Success 201 {object} response.SuccessResponse{data=model.Project} "Проект успешно создан"
+// @Failure 400 {object} response.ErrorResponse "Неверный формат запроса"
+// @Failure 401 {object} response.ErrorResponse "Не авторизован"
+// @Failure 422 {object} response.ErrorResponse "Ошибка при создании проекта"
+// @Router /api/projects [post]
 func (s *Server) CreateProject() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "transport.http.CreateProject"
@@ -73,6 +85,19 @@ type ReadProjectRequest struct {
 	Name string `json:"name" validate:"required"`
 }
 
+// ReadProject godoc
+// @Summary Получить проект по имени
+// @Description Возвращает информацию о проекте по его названию
+// @Tags Projects
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param input body ReadProjectRequest true "Имя проекта"
+// @Success 200 {object} response.SuccessResponse{data=model.Project} "Успешный запрос"
+// @Failure 400 {object} response.ErrorResponse "Неверный формат запроса"
+// @Failure 404 {object} response.ErrorResponse "Проект не найден"
+// @Failure 500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /api/projects/read [post]
 func (s *Server) ReadProject() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.ReadProject"
@@ -108,7 +133,20 @@ func (s *Server) ReadProject() http.HandlerFunc {
 type DeleteProjectRequest struct {
 	Name string `json:"name" validate:"required"`
 }
-
+// DeleteProject godoc
+// @Summary Удалить проект
+// @Description Удаляет проект по его названию (только для создателя проекта)
+// @Tags Projects
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param input body DeleteProjectRequest true "Имя проекта"
+// @Success 200 {object} response.SuccessResponse "Проект успешно удален"
+// @Failure 400 {object} response.ErrorResponse "Неверный формат запроса"
+// @Failure 401 {object} response.ErrorResponse "Не авторизован"
+// @Failure 403 {object} response.ErrorResponse "Нет прав на удаление"
+// @Failure 500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /api/projects [delete]
 func (s *Server) DeleteProject() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.DeleteProject"
@@ -156,7 +194,21 @@ type UpdateProjectRequest struct {
 	Name        *string `json:"name"`
 	Description *string `json:"description"`
 }
-
+// UpdateProject godoc
+// @Summary Обновить проект
+// @Description Обновляет данные проекта (название и/или описание)
+// @Tags Projects
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param name query string true "Название проекта для обновления"
+// @Param input body UpdateProjectRequest true "Новые данные проекта"
+// @Success 200 {object} response.SuccessResponse "Проект успешно обновлен"
+// @Failure 400 {object} response.ErrorResponse "Неверный формат запроса"
+// @Failure 401 {object} response.ErrorResponse "Не авторизован"
+// @Failure 403 {object} response.ErrorResponse "Нет прав на обновление"
+// @Failure 500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /api/projects [put]
 func (s *Server) UpdateProject() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.UpdateProject"
@@ -226,7 +278,16 @@ func (s *Server) UpdateProject() http.HandlerFunc {
 		})
 	}
 }
-
+// ListProjects godoc
+// @Summary Список проектов
+// @Description Возвращает список всех проектов пользователя
+// @Tags Projects
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} response.SuccessResponse{data=[]model.Project} "Список проектов"
+// @Failure 401 {object} response.ErrorResponse "Не авторизован"
+// @Failure 500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /api/projects/list [get]
 func (s * Server) ListProjects()http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.ListProjects"

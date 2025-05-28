@@ -19,6 +19,7 @@ type CreateTaskRequest struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description" validate:"required"`
 }
+
 // CreateTask godoc
 // @Summary Создание новой задачи
 // @Description Создает новую задачу в колонке
@@ -64,7 +65,6 @@ func (s *Server) CreateTask() http.HandlerFunc {
 			Description: req.Description,
 			ID_creator:  int64(creator_id),
 		}
-		task.Status = "todo"
 		task.Date_of_create = time.Now().Format("2006-01-02")
 		err := s.Svc.CreateTask(task)
 		if err != nil {
@@ -86,6 +86,7 @@ func (s *Server) CreateTask() http.HandlerFunc {
 type ReadTaskRequest struct {
 	ID int `json:"id" validate:"required"`
 }
+
 // ReadTask godoc
 // @Summary Получение задачи
 // @Description Возвращает информацию о задаче по ID
@@ -135,6 +136,7 @@ func (s *Server) ReadTask() http.HandlerFunc {
 type DeleteTaskRequest struct {
 	ID int `json:"id" validate:"required"`
 }
+
 // DeleteTask godoc
 // @Summary Удаление задачи
 // @Description Удаляет задачу по ID
@@ -195,6 +197,7 @@ type UpdateTaskRequest struct {
 	Description *string `json:"description"`
 	Id_column   *int    `json:"id_column"`
 }
+
 // UpdateTask godoc
 // @Summary Обновление задачи
 // @Description Обновляет имя, описание или колонку задачи
@@ -262,32 +265,32 @@ func (s *Server) UpdateTask() http.HandlerFunc {
 			ID_executor: sql.NullInt64{Int64: int64(userID), Valid: userID != 0},
 		}
 		if req.Name != nil {
-			task.ID_column=   int64(*req.Id_column)
+			task.ID_column = int64(*req.Id_column)
 			if err := s.Svc.UpdateTaskName(task); err != nil {
 				log.Error("failed to update name", sl.Err(err))
 				updateErrors = append(updateErrors, errors.New("failed to update name"))
 			}
 		}
-		if req.Description!=nil{
-			task.Description =*req.Description
-			if err:=s.Svc.UpdateTaskDescription(task);err!=nil{
+		if req.Description != nil {
+			task.Description = *req.Description
+			if err := s.Svc.UpdateTaskDescription(task); err != nil {
 				log.Error("failed to update description", sl.Err(err))
 				updateErrors = append(updateErrors, errors.New("failed to update description"))
 			}
 		}
-		if req.Id_column!=nil{
+		if req.Id_column != nil {
 			task.ID_column = int64(*req.Id_column)
-			if err:=s.Svc.UpdateTaskColumn(task);err!=nil{
+			if err := s.Svc.UpdateTaskColumn(task); err != nil {
 				log.Error("failed to update column id", sl.Err(err))
 				updateErrors = append(updateErrors, errors.New("failed to update column id"))
 			}
 		}
-		if len(updateErrors)>0{
-			render.JSON(w,r,response.ErrorResponse{
-				Status: http.StatusInternalServerError,
+		if len(updateErrors) > 0 {
+			render.JSON(w, r, response.ErrorResponse{
+				Status:  http.StatusInternalServerError,
 				Message: "partial update failed",
 			})
-			return 
+			return
 		}
 
 		render.JSON(w, r, response.SuccessResponse{
@@ -296,6 +299,7 @@ func (s *Server) UpdateTask() http.HandlerFunc {
 		})
 	}
 }
+
 // GetLogsTask godoc
 // @Summary Получение логов задачи
 // @Description Возвращает логи действий по задаче
@@ -308,34 +312,34 @@ func (s *Server) UpdateTask() http.HandlerFunc {
 // @Failure 500 {object} response.ErrorResponse "Ошибка при получении логов"
 // @Security BearerAuth
 // @Router /api/tasks/logs [get]
-func (s*Server) GetLogsTask()http.HandlerFunc{
+func (s *Server) GetLogsTask() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "http.GetLogsTask"
 
-		log:=s.Logger.With(slog.String("op",op))
+		log := s.Logger.With(slog.String("op", op))
 
 		id_task, err := strconv.Atoi(r.URL.Query().Get("id"))
 		if err != nil {
-			log.Error("failed to conv id",sl.Err(err))
+			log.Error("failed to conv id", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusBadRequest,
 				Message: "bad request",
 			})
 			return
 		}
-		logs,err:=s.Svc.GetLogsTask(id_task)
-		if err!=nil{
-			log.Error("failed to get logs task",sl.Err(err))
+		logs, err := s.Svc.GetLogsTask(id_task)
+		if err != nil {
+			log.Error("failed to get logs task", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusInternalServerError,
 				Message: "failed to get logs task",
 			})
 			return
 		}
-		render.JSON(w,r,response.SuccessResponse{
-			Status:http.StatusOK,
-			Message: "logs of task id:"+ strconv.Itoa(id_task),
-			Data: logs,
+		render.JSON(w, r, response.SuccessResponse{
+			Status:  http.StatusOK,
+			Message: "logs of task id:" + strconv.Itoa(id_task),
+			Data:    logs,
 		})
 	}
 }

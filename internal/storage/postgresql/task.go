@@ -15,6 +15,12 @@ type TaskRepository struct {
 	store *Storage
 }
 
+const (
+	todo = "todo"
+	inProgress = "in_progress"
+	done = "done"
+)
+
 func (r *TaskRepository) CreateTask(task *model.Task) error {
 	const op = "storage.postgresql.Task.CreateTask"
 
@@ -23,7 +29,7 @@ func (r *TaskRepository) CreateTask(task *model.Task) error {
 		task.Name,
 		task.Description,
 		task.ID_creator,
-		task.Status,
+		todo,
 		task.Date_of_create).Scan(&task.ID)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
@@ -132,7 +138,7 @@ func (r *TaskRepository) UpdateTaskColumn(task *model.Task) error {
 			WHERE id_project = $1
 			and name = $2
 		`, idProject,
-		"in_progress").Scan(&inProgressColumnID)
+		inProgress).Scan(&inProgressColumnID)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -143,26 +149,26 @@ func (r *TaskRepository) UpdateTaskColumn(task *model.Task) error {
 		WHERE id_project = $1
 		and name = $2
 	`, idProject,
-		"done").Scan(&doneColumnID)
+		done).Scan(&doneColumnID)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	switch {
 	case newIdColumn == int64(inProgressColumnID):
-		newStatus = "in_progress"
+		newStatus = inProgress
 		slog.Info("NEW STATUS: ",newStatus, inProgressColumnID)
-		err=r.logging(int(task.ID),"switch status from " + "todo" + "to "+ newStatus)
+		err=r.logging(int(task.ID),"switch status from " + todo + "to "+ newStatus)
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
 		}
 	case newIdColumn == int64(doneColumnID):
-		newStatus = "done"
+		newStatus = done
 		task.Date_of_execution = sql.NullTime{
 			Time:  time.Now(),
 			Valid: true,
 		}
 		slog.Info("NEW STATUS: ",newStatus, doneColumnID)
-		err =r.logging(int(task.ID),"switch status from " + "in_progress" + "to "+ newStatus)
+		err =r.logging(int(task.ID),"switch status from " + inProgress + "to "+ newStatus)
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
 		}

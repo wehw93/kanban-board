@@ -162,7 +162,66 @@ http://localhost:8080/swagger/index.html
 ## 🛠 Использование
 1. Для начала нужно создать пользователя.
 Введите данные в данный хендлер и нажмите execute
+
    ![image](https://github.com/user-attachments/assets/aacf6e4b-ed7a-4e81-a012-e5c7094984a2)
+   
 Ответ должен прийти такой
+
 ![image](https://github.com/user-attachments/assets/04438ffd-3b32-46c0-9ebb-94e8ea81fc94)
+
+2. Далее нужно авторизоваться и получить JWT токен
+
+![image](https://github.com/user-attachments/assets/32efc5fb-70af-4a59-9acb-141962b3b424)
+
+Ответ должен быть такой. Копируем наш JWT токен.
+
+![image](https://github.com/user-attachments/assets/0f229b60-a912-4b15-a468-0ce4e824fb54)
+
+Теперь вставляем наш токен в authorize, первым слово пишем Bearer
+
+![image](https://github.com/user-attachments/assets/6e6e5958-dea0-4e06-9e63-251ec60a7b3c)
+
+Мы авторизованы.
+
+3.Создаем проект
+
+![image](https://github.com/user-attachments/assets/e7c30476-4930-4bbc-9066-4f2f79874395)
+
+Ответ
+
+![image](https://github.com/user-attachments/assets/ed07ab03-538d-4cdb-a929-65b44de6a032)
+
+4.Далее нужно создать 3 колонки, или сколько вы хотите, но в данной методологии 3: todo, in progress, done
+
+Вводим id проекта, который мы только что создали
+
+![image](https://github.com/user-attachments/assets/e1ca1add-2701-48f6-9aa2-18f6f5369938)
+
+![image](https://github.com/user-attachments/assets/1d221a24-d8be-4aee-8b4b-6c4c4a9cafcf)
+
+![image](https://github.com/user-attachments/assets/e63af510-fe6d-410e-9bbc-e1ace48175f3
+
+5.Наконец создаем наши задачи
+
+В поле id_column вводим id колонки, в которую мы хотим записать таск, этот айди вы можете найти в ответе, когда создавали колонки
+
+![image](https://github.com/user-attachments/assets/b90db9ef-ea2c-422d-a9ae-50e84777ea9f)
+
+Ответ
+
+![image](https://github.com/user-attachments/assets/2db189e2-8f9c-4abe-8e1a-0ec4e24337fc)
+
+Далее можем переместить нашуз задачу из одной колонки в другую
+
+Здесь все параметры не обязательны, я хочу 
+![image](https://github.com/user-attachments/assets/fc79a1f2-8fe5-476d-b22f-e2fd3e2e73b8)
+
+
+
+
+
+
+
+
+
 

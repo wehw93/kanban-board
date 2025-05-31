@@ -159,3 +159,4 @@ http://localhost:8080/swagger/index.html
 9.Вы должны получить это:
 ![image](https://github.com/user-attachments/assets/30dca6ae-2f14-4ffe-b02b-498b7d27e6c7)
 
+## 🛠 Использование

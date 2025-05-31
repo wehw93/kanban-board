@@ -160,3 +160,9 @@ http://localhost:8080/swagger/index.html
 ![image](https://github.com/user-attachments/assets/30dca6ae-2f14-4ffe-b02b-498b7d27e6c7)
 
 ## 🛠 Использование
+1. Для начала нужно создать пользователя.
+Введите данные в данный хендлер и нажмите execute
+   ![image](https://github.com/user-attachments/assets/aacf6e4b-ed7a-4e81-a012-e5c7094984a2)
+Ответ должен прийти такой
+![image](https://github.com/user-attachments/assets/04438ffd-3b32-46c0-9ebb-94e8ea81fc94)
+

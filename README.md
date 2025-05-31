@@ -112,7 +112,7 @@
 1.Чтобы установить и запустить URLite, выполните следующие шаги:
 ```bash
 https://github.com/wehw93/kanban-board.git
-cd URLite
+cd kanban-board
 ```
 2.Установите зависимости:
 ```bash

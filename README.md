@@ -136,3 +136,26 @@ http_server:
   timeout: "4s"
   idle_timeout: "60s"
 ```
+4.Запустите докер контейнер для базы данных postgres
+```bash
+docker-compose up -d
+```
+5.Прогоните миграции
+```bash
+make run_migrations
+```
+6.Соберите приложение
+```bash
+make
+```
+7.Запустите приложение
+```bash
+./board
+```
+8.Откройте браузер и введите ссылку:
+```bash
+http://localhost:8080/swagger/index.html
+```
+9.Вы должны получить это:
+![image](https://github.com/user-attachments/assets/30dca6ae-2f14-4ffe-b02b-498b7d27e6c7)
+

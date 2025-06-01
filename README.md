@@ -239,6 +239,7 @@ http://localhost:8080/swagger/index.html
 
 ![image](https://github.com/user-attachments/assets/f1660d2e-9833-494a-980d-aea9c17cfb50)
 
+Используемый стек:
 
 
 

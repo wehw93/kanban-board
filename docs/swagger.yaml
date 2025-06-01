@@ -1,4 +1,14 @@
 definitions:
+  http.CreateColumnRequest:
+    properties:
+      id_project:
+        type: integer
+      name:
+        type: string
+    required:
+    - id_project
+    - name
+    type: object
   http.CreateProjectRequest:
     properties:
       description:
@@ -270,6 +280,42 @@ paths:
       security:
       - BearerAuth: []
       summary: Получение информации о колонке
+      tags:
+      - Columns
+    post:
+      consumes:
+      - application/json
+      description: Создает новую колонку в указанном проекте
+      parameters:
+      - description: Данные колонки
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateColumnRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Колонка успешно создана
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Column'
+              type: object
+        "400":
+          description: Неверный формат запроса
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "422":
+          description: Ошибка при создании колонки
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создание новой колонки
       tags:
       - Columns
     put:

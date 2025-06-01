@@ -28,7 +28,6 @@ type CreateColumnRequest struct {
 // @Failure 422 {object} response.ErrorResponse "Ошибка при создании колонки"
 // @Security BearerAuth
 // @Router /api/columns [post]
-
 func (s *Server) CreateColumn() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "transport.http.CreateColumn"

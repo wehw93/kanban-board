@@ -83,6 +83,7 @@ func (s *Server) InitRoutes() {
 			r.Get("/",s.ReadTask())
 			r.Delete("/",s.DeleteTask())
 			r.Put("/",s.UpdateTask())
+			r.Get("/logs",s.GetLogsTask())
 			s.Router.Get("/swagger/*", httpSwagger.Handler(
 				httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
 			))

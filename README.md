@@ -214,7 +214,24 @@ http://localhost:8080/swagger/index.html
 Далее можем переместить нашуз задачу из одной колонки в другую
 
 Здесь все параметры не обязательны, я хочу изменить статус задачи. Для этого нужно написать id колонки, в которую хочу переместить задачу.
+
 ![image](https://github.com/user-attachments/assets/fc79a1f2-8fe5-476d-b22f-e2fd3e2e73b8)
+
+Ответ
+
+![image](https://github.com/user-attachments/assets/d36d7686-a8ff-45db-b92e-937373f86f17)
+
+Теперь статус нашей задачи изменился на "in_progress"
+
+Таким образом можно перемещать задачи.
+
+Каждое действие с задачей логируется и можно получить историю логов
+
+![image](https://github.com/user-attachments/assets/d4c4e3ff-e8d3-4778-b3b3-76d35015bce6)
+
+Ответ
+
+![image](https://github.com/user-attachments/assets/f1660d2e-9833-494a-980d-aea9c17cfb50)
 
 
 

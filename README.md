@@ -317,7 +317,7 @@ http://localhost:8080/swagger/index.html
 
 ![image](https://github.com/user-attachments/assets/6b2d512e-ec02-45a3-920a-67790c7557da)
 
-## 📝 Roadmap & To-Do
+## 📝To-Do - Сделать в будущем
 
    - 🧪 Unit-тесты для всех слоев приложения (80%+ coverage)
 

@@ -199,7 +199,7 @@ http://localhost:8080/swagger/index.html
 
 ![image](https://github.com/user-attachments/assets/1d221a24-d8be-4aee-8b4b-6c4c4a9cafcf)
 
-![image](https://github.com/user-attachments/assets/e63af510-fe6d-410e-9bbc-e1ace48175f3
+![image](https://github.com/user-attachments/assets/e63af510-fe6d-410e-9bbc-e1ace48175f3)
 
 5.Наконец создаем наши задачи
 
@@ -213,7 +213,7 @@ http://localhost:8080/swagger/index.html
 
 Далее можем переместить нашуз задачу из одной колонки в другую
 
-Здесь все параметры не обязательны, я хочу 
+Здесь все параметры не обязательны, я хочу изменить статус задачи. Для этого нужно написать id колонки, в которую хочу переместить задачу.
 ![image](https://github.com/user-attachments/assets/fc79a1f2-8fe5-476d-b22f-e2fd3e2e73b8)
 
 

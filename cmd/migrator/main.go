@@ -16,15 +16,21 @@ func main() {
 	var migrationsPath string
 
 	flag.StringVar(&migrationsPath, "migrations-path", "", "path to migrations")
-
 	flag.Parse()
 
 	cfg := config.MustLoad()
 
-	connURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port, cfg.DB.Name, cfg.DB.Sslmode)
+	connURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		cfg.DB.User,
+		cfg.DB.Password,
+		cfg.DB.Host,
+		cfg.DB.Port,
+		cfg.DB.Name,
+		cfg.DB.Sslmode)
 
-	m, err := migrate.New("file://"+
-		migrationsPath,
+	m, err := migrate.New(
+		"file://"+
+			migrationsPath,
 		connURL)
 	if err != nil {
 		log.Fatal(err)

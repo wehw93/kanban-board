@@ -19,14 +19,14 @@ type BoardService interface {
 	UpdateProjectName(name string, project model.Project) error
 	ListProjects() ([]model.Project, error)
 	CreateColumn(column *model.Column) error
-	ReadColumn(column model.Column) (*response.ReadColumnResponse,error)
-	DeleteColumn(id int)error
-	UpdateColumnName(column model.Column,name string)error
-	CreateTask(task * model.Task) error
-	ReadTask(task*model.Task)error
+	ReadColumn(column model.Column) (*response.ReadColumnResponse, error)
+	DeleteColumn(id int) error
+	UpdateColumnName(column model.Column, name string) error
+	CreateTask(task *model.Task) error
+	ReadTask(task *model.Task) error
 	DeleteTask(userID int, id int) error
-	UpdateTaskName(task * model.Task)error
-	UpdateTaskDescription(task * model.Task)error
-	UpdateTaskColumn(task * model.Task)error
-	GetLogsTask(id_task int) ([]model.Task_log,error)
+	UpdateTaskName(task *model.Task) error
+	UpdateTaskDescription(task *model.Task) error
+	UpdateTaskColumn(task *model.Task) error
+	GetLogsTask(id_task int) ([]model.Task_log, error)
 }

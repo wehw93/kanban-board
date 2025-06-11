@@ -32,18 +32,22 @@ type DB struct {
 }
 
 func (db DB) GetDSN() string {
-	return fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=%s",
+	return fmt.Sprintf(
+		"host=%s port=%s dbname=%s user=%s password=%s sslmode=%s",
 		db.Host, db.Port, db.Name, db.User, db.Password, db.Sslmode)
 }
 
 func MustLoad() *Config {
-	
+
 	if err := godotenv.Load("local.env"); err != nil && !os.IsNotExist(err) {
 		log.Fatalf("error loading .env file: %v", err)
 	}
+
 	var cfg Config
+
 	if err := cleanenv.ReadConfig(os.Getenv("CONFIG_PATH"), &cfg); err != nil {
 		log.Fatalf("Cannot read config: %v:%v", err, os.Getenv("CONFIG_PATH"))
 	}
+
 	return &cfg
 }

@@ -29,6 +29,7 @@ type Server struct {
 }
 
 func NewServer(cfg *config.Config, logger *slog.Logger, svc service.BoardService) *Server {
+
 	router := chi.NewRouter()
 
 	router.Use(middleware.RequestID)
@@ -49,11 +50,13 @@ func NewServer(cfg *config.Config, logger *slog.Logger, svc service.BoardService
 }
 
 func (s *Server) InitRoutes() {
+
 	s.Router.Route("/auth", func(r chi.Router) {
 		r.Use(middleware.AllowContentType("application/json"))
 		r.Post("/register", s.CreateUser())
 		r.Post("/login", s.LoginUser())
 	})
+
 	s.Router.Route("/api", func(r chi.Router) {
 		r.Use(middleware.AllowContentType("application/json"))
 		r.Use(middleware.SetHeader("Content-Type", "application/json"))
@@ -68,34 +71,40 @@ func (s *Server) InitRoutes() {
 		r.Route("/projects", func(r chi.Router) {
 			r.Post("/", s.CreateProject())
 			r.Get("/read", s.ReadProject())
-			r.Delete("/",s.DeleteProject())
-			r.Put("/",s.UpdateProject())
-			r.Get("/list",s.ListProjects())
+			r.Delete("/", s.DeleteProject())
+			r.Put("/", s.UpdateProject())
+			r.Get("/list", s.ListProjects())
 		})
-		r.Route("/columns",func (r chi.Router){
-			r.Post("/",s.CreateColumn())
-			r.Get("/",s.ReadColumn())
-			r.Delete("/",s.DeleteColumn())
-			r.Put("/",s.UpdateColumn())
+
+		r.Route("/columns", func(r chi.Router) {
+			r.Post("/", s.CreateColumn())
+			r.Get("/", s.ReadColumn())
+			r.Delete("/", s.DeleteColumn())
+			r.Put("/", s.UpdateColumn())
 		})
-		r.Route("/tasks",func (r chi.Router){
-			r.Post("/",s.CreateTask())
-			r.Get("/",s.ReadTask())
-			r.Delete("/",s.DeleteTask())
-			r.Put("/",s.UpdateTask())
-			r.Get("/logs",s.GetLogsTask())
+
+		r.Route("/tasks", func(r chi.Router) {
+			r.Post("/", s.CreateTask())
+			r.Get("/", s.ReadTask())
+			r.Delete("/", s.DeleteTask())
+			r.Put("/", s.UpdateTask())
+			r.Get("/logs", s.GetLogsTask())
 			s.Router.Get("/swagger/*", httpSwagger.Handler(
 				httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
 			))
 		})
+
 		s.Router.Get("/swagger/*", httpSwagger.WrapHandler)
 	})
 }
 
 func (s *Server) AuthentificationUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		const op = "middleware.auth"
+
 		log := s.Logger.With(slog.String("op", op))
+
 		tokenString := r.Header.Get("Authorization")
 		if tokenString == "" {
 			log.Error("authorization header missing")
@@ -105,6 +114,7 @@ func (s *Server) AuthentificationUser(next http.Handler) http.Handler {
 			})
 			return
 		}
+
 		parts := strings.Split(tokenString, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			log.Error("invalid authorization header format")
@@ -114,7 +124,9 @@ func (s *Server) AuthentificationUser(next http.Handler) http.Handler {
 			})
 			return
 		}
+
 		s.JWTSecret = JWTSecret
+
 		claims, err := helpers_jwt.ParseToken(parts[1], s.JWTSecret)
 		if err != nil {
 			log.Error("failed to parse token", sl.Err(err))
@@ -124,6 +136,7 @@ func (s *Server) AuthentificationUser(next http.Handler) http.Handler {
 			})
 			return
 		}
+
 		user_id, ok := claims["uid"].(float64)
 		if !ok {
 			log.Error("invalid user ID in token")
@@ -133,7 +146,9 @@ func (s *Server) AuthentificationUser(next http.Handler) http.Handler {
 			})
 			return
 		}
+
 		ctx := context.WithValue(r.Context(), "userID", int(user_id))
+
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

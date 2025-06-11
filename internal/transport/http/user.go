@@ -17,7 +17,6 @@ type CreateUserRequest struct {
 	Email    string `json:"email" validate:"required"`
 }
 
-
 // @title Kanban Board API
 // @version 1.0
 // @description API для управления пользователями и аутентификации
@@ -39,9 +38,13 @@ type CreateUserRequest struct {
 // @Router /auth/register [post]
 func (s *Server) CreateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		const op = "http.CreateUser"
+
 		log := s.Logger.With(slog.String("op", op))
+
 		var req CreateUserRequest
+
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
 			log.Error("failed to decode request", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
@@ -50,7 +53,8 @@ func (s *Server) CreateUser() http.HandlerFunc {
 			})
 			return
 		}
-		log.Info("create user request", 
+
+		log.Info("create user request",
 			slog.String("email", req.Email),
 		)
 
@@ -59,6 +63,7 @@ func (s *Server) CreateUser() http.HandlerFunc {
 			Email:    req.Email,
 			Password: req.Password,
 		}
+
 		if err := user.BeforeCreate(); err != nil {
 			log.Error("failed to prepare user", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
@@ -67,6 +72,7 @@ func (s *Server) CreateUser() http.HandlerFunc {
 			})
 			return
 		}
+
 		if err := s.Svc.CreateUser(user); err != nil {
 			log.Error("failed to create user", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
@@ -75,7 +81,9 @@ func (s *Server) CreateUser() http.HandlerFunc {
 			})
 			return
 		}
+
 		log.Info("user created", slog.Int("user_id", user.ID))
+
 		render.JSON(w, r, response.SuccessResponse{
 			Status: http.StatusCreated,
 			Data:   user,
@@ -87,6 +95,7 @@ type LoginUserRequest struct {
 	Email    string `json:"email" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
+
 // LoginUser godoc
 // @Summary Аутентификация пользователя
 // @Description Вход в систему, возвращает JWT токен
@@ -100,9 +109,13 @@ type LoginUserRequest struct {
 // @Router /auth/login [post]
 func (s *Server) LoginUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		const op = "http.LoginUser"
+
 		log := s.Logger.With(slog.String("op", op))
+
 		var req LoginUserRequest
+
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
 			log.Error("failed to decode request", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
@@ -111,6 +124,7 @@ func (s *Server) LoginUser() http.HandlerFunc {
 			})
 			return
 		}
+
 		log.Info("login attempt", slog.String("email", req.Email))
 
 		token, err := s.Svc.LoginUser(req.Email, req.Password)
@@ -122,6 +136,7 @@ func (s *Server) LoginUser() http.HandlerFunc {
 			})
 			return
 		}
+
 		log.Info("login successful", slog.String("email", req.Email))
 		render.JSON(w, r, response.SuccessResponse{
 			Status: http.StatusOK,
@@ -129,6 +144,7 @@ func (s *Server) LoginUser() http.HandlerFunc {
 		})
 	}
 }
+
 // ReadUser godoc
 // @Summary Получить данные текущего пользователя
 // @Tags Users
@@ -140,8 +156,11 @@ func (s *Server) LoginUser() http.HandlerFunc {
 // @Router /api/users/me [get]
 func (s *Server) ReadUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		const op = "http.ReadUser"
+
 		log := s.Logger.With(slog.String("op", op))
+
 		userID, ok := r.Context().Value("userID").(int)
 		if !ok {
 			log.Error("failed to get userID from context")
@@ -151,6 +170,7 @@ func (s *Server) ReadUser() http.HandlerFunc {
 			})
 			return
 		}
+
 		log.Info("reading user data", slog.Int("user_id", userID))
 
 		user, err := s.Svc.ReadUser(userID)
@@ -162,12 +182,14 @@ func (s *Server) ReadUser() http.HandlerFunc {
 			})
 			return
 		}
+
 		render.JSON(w, r, response.SuccessResponse{
 			Status: http.StatusOK,
 			Data:   user,
 		})
 	}
 }
+
 // UpdateUser godoc
 // @Summary Обновить данные пользователя
 // @Description Обновляет email и/или пароль пользователя
@@ -183,7 +205,9 @@ func (s *Server) ReadUser() http.HandlerFunc {
 // @Router /api/users/me [put]
 func (s *Server) DeleteUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		const op = "http.DeleteUser"
+
 		log := s.Logger.With(slog.String("op", op))
 
 		userID, ok := r.Context().Value("userID").(int)
@@ -195,6 +219,7 @@ func (s *Server) DeleteUser() http.HandlerFunc {
 			})
 			return
 		}
+
 		log.Info("deleting user", slog.Int("user_id", userID))
 
 		if err := s.Svc.DeleteUser(userID); err != nil {
@@ -217,6 +242,7 @@ type UpdateUserRequest struct {
 	Email    *string `json:"email"`
 	Password *string `json:"password"`
 }
+
 // DeleteUser godoc
 // @Summary Удалить пользователя
 // @Description Удаляет текущего авторизованного пользователя
@@ -229,7 +255,9 @@ type UpdateUserRequest struct {
 // @Router /api/users/me [delete]
 func (s *Server) UpdateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		const op = "http.UpdateUser"
+
 		log := s.Logger.With(slog.String("op", op))
 
 		userID, ok := r.Context().Value("userID").(int)
@@ -243,6 +271,7 @@ func (s *Server) UpdateUser() http.HandlerFunc {
 		}
 
 		var req UpdateUserRequest
+
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
 			log.Error("failed to decode request", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
@@ -252,13 +281,14 @@ func (s *Server) UpdateUser() http.HandlerFunc {
 			return
 		}
 
-		log.Info("updating user", 
+		log.Info("updating user",
 			slog.Int("user_id", userID),
 			slog.Bool("has_email", req.Email != nil),
 			slog.Bool("has_password", req.Password != nil),
 		)
 
 		user := model.User{ID: userID}
+
 		var updateErrors []error
 
 		if req.Email != nil {

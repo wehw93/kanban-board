@@ -15,6 +15,7 @@ type CreateProjectRequest struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description"`
 }
+
 // CreateProject godoc
 // @Summary Создать новый проект
 // @Description Создает новый проект для текущего пользователя
@@ -30,8 +31,11 @@ type CreateProjectRequest struct {
 // @Router /api/projects [post]
 func (s *Server) CreateProject() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		const op = "transport.http.CreateProject"
+
 		log := s.Logger.With(slog.String("op", op))
+
 		userID, ok := r.Context().Value("userID").(int)
 		if !ok {
 			log.Error("failed to get userID from context")
@@ -41,24 +45,31 @@ func (s *Server) CreateProject() http.HandlerFunc {
 			})
 			return
 		}
+
 		var req CreateProjectRequest
+
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
+
 			log.Error("failed to decode request body", sl.Err(err))
+
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusBadRequest,
 				Message: "Invalid request body",
 			})
 			return
 		}
+
 		log.Info("create project request",
 			slog.Int("user_id", userID),
 			slog.String("project_name", req.Name),
 		)
+
 		project := &model.Project{
 			IDCreator:   int64(userID),
 			Name:        req.Name,
 			Description: req.Description,
 		}
+
 		if err := s.Svc.CreateProject(project); err != nil {
 			log.Error("failed to create project",
 				sl.Err(err),
@@ -69,6 +80,7 @@ func (s *Server) CreateProject() http.HandlerFunc {
 			})
 			return
 		}
+
 		log.Info("project created successfully",
 			slog.Int("user_id", userID),
 			slog.Int64("project_id", project.ID),
@@ -100,9 +112,13 @@ type ReadProjectRequest struct {
 // @Router /api/projects/read [post]
 func (s *Server) ReadProject() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		const op = "http.ReadProject"
+
 		log := s.Logger.With(slog.String("op", op))
+
 		var req ReadProjectRequest
+
 		err := render.DecodeJSON(r.Body, &req)
 		if err != nil {
 			log.Error("failed to decode request", sl.Err(err))
@@ -114,6 +130,7 @@ func (s *Server) ReadProject() http.HandlerFunc {
 		}
 
 		log.Info("reading data of project", slog.String("name", req.Name))
+
 		resp, err := s.Svc.ReadProject(req.Name)
 		if err != nil {
 			log.Error("failed to read project", slog.String("name", req.Name), sl.Err(err))
@@ -123,6 +140,7 @@ func (s *Server) ReadProject() http.HandlerFunc {
 			})
 			return
 		}
+
 		render.JSON(w, r, response.SuccessResponse{
 			Status: http.StatusOK,
 			Data:   resp,
@@ -133,6 +151,7 @@ func (s *Server) ReadProject() http.HandlerFunc {
 type DeleteProjectRequest struct {
 	Name string `json:"name" validate:"required"`
 }
+
 // DeleteProject godoc
 // @Summary Удалить проект
 // @Description Удаляет проект по его названию (только для создателя проекта)
@@ -149,8 +168,11 @@ type DeleteProjectRequest struct {
 // @Router /api/projects [delete]
 func (s *Server) DeleteProject() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		const op = "http.DeleteProject"
+
 		log := s.Logger.With(slog.String("op", op))
+
 		userID, ok := r.Context().Value("userID").(int)
 		if !ok {
 			log.Error("failed to get userID from context")
@@ -160,7 +182,9 @@ func (s *Server) DeleteProject() http.HandlerFunc {
 			})
 			return
 		}
+
 		var req DeleteProjectRequest
+
 		err := render.DecodeJSON(r.Body, &req)
 		if err != nil {
 			log.Error("failed to decode request", sl.Err(err))
@@ -170,6 +194,7 @@ func (s *Server) DeleteProject() http.HandlerFunc {
 			})
 			return
 		}
+
 		log.Info("deleting project",
 			slog.String("name", req.Name),
 			slog.Int("user_id", userID),
@@ -183,6 +208,7 @@ func (s *Server) DeleteProject() http.HandlerFunc {
 			})
 			return
 		}
+
 		render.JSON(w, r, response.SuccessResponse{
 			Status:  http.StatusOK,
 			Message: "project deleted successfully",
@@ -194,6 +220,7 @@ type UpdateProjectRequest struct {
 	Name        *string `json:"name"`
 	Description *string `json:"description"`
 }
+
 // UpdateProject godoc
 // @Summary Обновить проект
 // @Description Обновляет данные проекта (название и/или описание)
@@ -211,7 +238,9 @@ type UpdateProjectRequest struct {
 // @Router /api/projects [put]
 func (s *Server) UpdateProject() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		const op = "http.UpdateProject"
+
 		log := s.Logger.With(slog.String("op", op))
 
 		userID, ok := r.Context().Value("userID").(int)
@@ -233,7 +262,9 @@ func (s *Server) UpdateProject() http.HandlerFunc {
 			})
 			return
 		}
+
 		var req UpdateProjectRequest
+
 		err := render.DecodeJSON(r.Body, &req)
 		if err != nil {
 			log.Error("failed to decode request", sl.Err(err))
@@ -243,13 +274,17 @@ func (s *Server) UpdateProject() http.HandlerFunc {
 			})
 			return
 		}
+
 		log.Info("updating project",
 			slog.String("original_name", name),
 			slog.Int("user_id", userID),
 			slog.Any("new_data", req),
 		)
+
 		var updateErrors []error
+
 		project := model.Project{IDCreator: int64(userID), Name: name}
+
 		if req.Name != nil {
 			if err := s.Svc.UpdateProjectName(*req.Name, project); err != nil {
 				log.Error("failed to update name", sl.Err(err))
@@ -265,6 +300,7 @@ func (s *Server) UpdateProject() http.HandlerFunc {
 				updateErrors = append(updateErrors, errors.New("failed to update description"))
 			}
 		}
+
 		if len(updateErrors) > 0 {
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusInternalServerError,
@@ -272,12 +308,14 @@ func (s *Server) UpdateProject() http.HandlerFunc {
 			})
 			return
 		}
+
 		render.JSON(w, r, response.SuccessResponse{
 			Status:  http.StatusOK,
 			Message: "Project update succssfully",
 		})
 	}
 }
+
 // ListProjects godoc
 // @Summary Список проектов
 // @Description Возвращает список всех проектов пользователя
@@ -288,23 +326,28 @@ func (s *Server) UpdateProject() http.HandlerFunc {
 // @Failure 401 {object} response.ErrorResponse "Не авторизован"
 // @Failure 500 {object} response.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /api/projects/list [get]
-func (s * Server) ListProjects()http.HandlerFunc{
+func (s *Server) ListProjects() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		const op = "http.ListProjects"
-		log:=s.Logger.With(slog.String("op",op))
-		listProjects,err:=s.Svc.ListProjects()
-		if err!=nil{
-			log.Error("failed to read list of projects",sl.Err(err))
+
+		log := s.Logger.With(slog.String("op", op))
+
+		listProjects, err := s.Svc.ListProjects()
+
+		if err != nil {
+			log.Error("failed to read list of projects", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusInternalServerError,
 				Message: "failed to read list of projects",
 			})
 			return
 		}
-		render.JSON(w,r,response.SuccessResponse{
-			Status: http.StatusOK,
+
+		render.JSON(w, r, response.SuccessResponse{
+			Status:  http.StatusOK,
 			Message: "projects:",
-			Data:listProjects,
+			Data:    listProjects,
 		})
 	}
 }

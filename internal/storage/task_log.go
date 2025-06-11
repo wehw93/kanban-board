@@ -1,5 +1,4 @@
 package storage
 
-type Task_log_Repository interface{
-	
+type Task_log_Repository interface {
 }

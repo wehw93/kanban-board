@@ -37,7 +37,7 @@ func (s *Server) CreateTask() http.HandlerFunc {
 
 		const op = "http.CreateTask"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		creator_id, ok := r.Context().Value("userID").(int)
 		if !ok {
@@ -73,7 +73,7 @@ func (s *Server) CreateTask() http.HandlerFunc {
 
 		task.Date_of_create = time.Now().Format("2006-01-02")
 
-		err := s.Svc.CreateTask(task)
+		err := s.boardSvc.CreateTask(task)
 
 		if err != nil {
 			log.Error("failed to create task", sl.Err(err))
@@ -113,7 +113,7 @@ func (s *Server) ReadTask() http.HandlerFunc {
 
 		const op = "http.ReadTask"
 
-		log := s.Logger.With("op", op)
+		log := s.logger.With("op", op)
 
 		var req ReadTaskRequest
 
@@ -133,7 +133,7 @@ func (s *Server) ReadTask() http.HandlerFunc {
 
 		log.Info("reading data of task", slog.Int("id", req.ID))
 
-		err = s.Svc.ReadTask(task)
+		err = s.boardSvc.ReadTask(task)
 		if err != nil {
 			log.Error("failed to read task", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
@@ -171,7 +171,7 @@ func (s *Server) DeleteTask() http.HandlerFunc {
 
 		const op = "http.DeleteTask"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		userID, ok := r.Context().Value("userID").(int)
 		if !ok {
@@ -200,7 +200,7 @@ func (s *Server) DeleteTask() http.HandlerFunc {
 			slog.Int("user_id", userID),
 		)
 
-		if err := s.Svc.DeleteTask(userID, req.ID); err != nil {
+		if err := s.boardSvc.DeleteTask(userID, req.ID); err != nil {
 			log.Error("failed to delete task", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusInternalServerError,
@@ -239,7 +239,7 @@ func (s *Server) UpdateTask() http.HandlerFunc {
 
 		const op = "http.UpdateTask"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		userID, ok := r.Context().Value("userID").(int)
 		if !ok {
@@ -297,7 +297,7 @@ func (s *Server) UpdateTask() http.HandlerFunc {
 
 		if req.Name != nil {
 			task.ID_column = int64(*req.Id_column)
-			if err := s.Svc.UpdateTaskName(task); err != nil {
+			if err := s.boardSvc.UpdateTaskName(task); err != nil {
 				log.Error("failed to update name", sl.Err(err))
 				updateErrors = append(updateErrors, errors.New("failed to update name"))
 			}
@@ -305,7 +305,7 @@ func (s *Server) UpdateTask() http.HandlerFunc {
 
 		if req.Description != nil {
 			task.Description = *req.Description
-			if err := s.Svc.UpdateTaskDescription(task); err != nil {
+			if err := s.boardSvc.UpdateTaskDescription(task); err != nil {
 				log.Error("failed to update description", sl.Err(err))
 				updateErrors = append(updateErrors, errors.New("failed to update description"))
 			}
@@ -313,7 +313,7 @@ func (s *Server) UpdateTask() http.HandlerFunc {
 
 		if req.Id_column != nil {
 			task.ID_column = int64(*req.Id_column)
-			if err := s.Svc.UpdateTaskColumn(task); err != nil {
+			if err := s.boardSvc.UpdateTaskColumn(task); err != nil {
 				log.Error("failed to update column id", sl.Err(err))
 				updateErrors = append(updateErrors, errors.New("failed to update column id"))
 			}
@@ -351,7 +351,7 @@ func (s *Server) GetLogsTask() http.HandlerFunc {
 
 		const op = "http.GetLogsTask"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		id_task, err := strconv.Atoi(r.URL.Query().Get("id"))
 		if err != nil {
@@ -363,7 +363,7 @@ func (s *Server) GetLogsTask() http.HandlerFunc {
 			return
 		}
 
-		logs, err := s.Svc.GetLogsTask(id_task)
+		logs, err := s.boardSvc.GetLogsTask(id_task)
 		if err != nil {
 			log.Error("failed to get logs task", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{

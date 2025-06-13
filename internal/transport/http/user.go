@@ -41,7 +41,7 @@ func (s *Server) CreateUser() http.HandlerFunc {
 
 		const op = "http.CreateUser"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		var req CreateUserRequest
 
@@ -73,7 +73,7 @@ func (s *Server) CreateUser() http.HandlerFunc {
 			return
 		}
 
-		if err := s.Svc.CreateUser(user); err != nil {
+		if err := s.boardSvc.CreateUser(user); err != nil {
 			log.Error("failed to create user", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusInternalServerError,
@@ -112,7 +112,7 @@ func (s *Server) LoginUser() http.HandlerFunc {
 
 		const op = "http.LoginUser"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		var req LoginUserRequest
 
@@ -127,7 +127,7 @@ func (s *Server) LoginUser() http.HandlerFunc {
 
 		log.Info("login attempt", slog.String("email", req.Email))
 
-		token, err := s.Svc.LoginUser(req.Email, req.Password)
+		token, err := s.boardSvc.LoginUser(req.Email, req.Password)
 		if err != nil {
 			log.Error("login failed", slog.String("email", req.Email), sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
@@ -159,7 +159,7 @@ func (s *Server) ReadUser() http.HandlerFunc {
 
 		const op = "http.ReadUser"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		userID, ok := r.Context().Value("userID").(int)
 		if !ok {
@@ -173,7 +173,7 @@ func (s *Server) ReadUser() http.HandlerFunc {
 
 		log.Info("reading user data", slog.Int("user_id", userID))
 
-		user, err := s.Svc.ReadUser(userID)
+		user, err := s.boardSvc.ReadUser(userID)
 		if err != nil {
 			log.Error("failed to read user", slog.Int("user_id", userID), sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
@@ -208,7 +208,7 @@ func (s *Server) DeleteUser() http.HandlerFunc {
 
 		const op = "http.DeleteUser"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		userID, ok := r.Context().Value("userID").(int)
 		if !ok {
@@ -222,7 +222,7 @@ func (s *Server) DeleteUser() http.HandlerFunc {
 
 		log.Info("deleting user", slog.Int("user_id", userID))
 
-		if err := s.Svc.DeleteUser(userID); err != nil {
+		if err := s.boardSvc.DeleteUser(userID); err != nil {
 			log.Error("failed to delete user", slog.Int("user_id", userID), sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusInternalServerError,
@@ -258,7 +258,7 @@ func (s *Server) UpdateUser() http.HandlerFunc {
 
 		const op = "http.UpdateUser"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		userID, ok := r.Context().Value("userID").(int)
 		if !ok {
@@ -293,7 +293,7 @@ func (s *Server) UpdateUser() http.HandlerFunc {
 
 		if req.Email != nil {
 			user.Email = *req.Email
-			if err := s.Svc.UpdateEmail(user); err != nil {
+			if err := s.boardSvc.UpdateEmail(user); err != nil {
 				log.Error("failed to update email", sl.Err(err))
 				updateErrors = append(updateErrors, errors.New("failed to update email"))
 			}
@@ -307,7 +307,7 @@ func (s *Server) UpdateUser() http.HandlerFunc {
 				updateErrors = append(updateErrors, errors.New("failed to process password"))
 			} else {
 				user.Encrypted_password = encrypted
-				if err := s.Svc.UpdatePassword(user); err != nil {
+				if err := s.boardSvc.UpdatePassword(user); err != nil {
 					log.Error("failed to update password", sl.Err(err))
 					updateErrors = append(updateErrors, errors.New("failed to update password"))
 				}

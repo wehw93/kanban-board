@@ -18,17 +18,15 @@ import (
 	"github.com/wehw93/kanban-board/internal/service"
 )
 
-const JWTSecret = "secret"
-
 type Server struct {
-	Server    *http.Server
-	Router    *chi.Mux
-	Logger    *slog.Logger
-	Svc       service.BoardService
-	JWTSecret string
+	server   *http.Server
+	router   *chi.Mux
+	logger   *slog.Logger
+	boardSvc service.BoardService
+	authSvc  service.AuthService
 }
 
-func NewServer(cfg *config.Config, logger *slog.Logger, svc service.BoardService) *Server {
+func NewServer(cfg *config.Config, logger *slog.Logger, BoardSvc service.BoardService, AuthSvc service.AuthService) *Server {
 
 	router := chi.NewRouter()
 
@@ -37,10 +35,11 @@ func NewServer(cfg *config.Config, logger *slog.Logger, svc service.BoardService
 	router.Use(middleware.Recoverer)
 
 	return &Server{
-		Svc:    svc,
-		Router: router,
-		Logger: logger,
-		Server: &http.Server{
+		boardSvc: BoardSvc,
+		authSvc:  AuthSvc,
+		router:   router,
+		logger:   logger,
+		server: &http.Server{
 			Addr:        cfg.HTTP_Server.Address,
 			Handler:     router,
 			ReadTimeout: cfg.HTTP_Server.Timeout,
@@ -51,13 +50,13 @@ func NewServer(cfg *config.Config, logger *slog.Logger, svc service.BoardService
 
 func (s *Server) InitRoutes() {
 
-	s.Router.Route("/auth", func(r chi.Router) {
+	s.router.Route("/auth", func(r chi.Router) {
 		r.Use(middleware.AllowContentType("application/json"))
 		r.Post("/register", s.CreateUser())
 		r.Post("/login", s.LoginUser())
 	})
 
-	s.Router.Route("/api", func(r chi.Router) {
+	s.router.Route("/api", func(r chi.Router) {
 		r.Use(middleware.AllowContentType("application/json"))
 		r.Use(middleware.SetHeader("Content-Type", "application/json"))
 		r.Use(s.AuthentificationUser)
@@ -89,12 +88,12 @@ func (s *Server) InitRoutes() {
 			r.Delete("/", s.DeleteTask())
 			r.Put("/", s.UpdateTask())
 			r.Get("/logs", s.GetLogsTask())
-			s.Router.Get("/swagger/*", httpSwagger.Handler(
+			s.router.Get("/swagger/*", httpSwagger.Handler(
 				httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
 			))
 		})
 
-		s.Router.Get("/swagger/*", httpSwagger.WrapHandler)
+		s.router.Get("/swagger/*", httpSwagger.WrapHandler)
 	})
 }
 
@@ -103,7 +102,7 @@ func (s *Server) AuthentificationUser(next http.Handler) http.Handler {
 
 		const op = "middleware.auth"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		tokenString := r.Header.Get("Authorization")
 		if tokenString == "" {
@@ -125,9 +124,9 @@ func (s *Server) AuthentificationUser(next http.Handler) http.Handler {
 			return
 		}
 
-		s.JWTSecret = JWTSecret
+		jwtSecret := s.authSvc.GetJWTSecret()
 
-		claims, err := helpers_jwt.ParseToken(parts[1], s.JWTSecret)
+		claims, err := helpers_jwt.ParseToken(parts[1], jwtSecret)
 		if err != nil {
 			log.Error("failed to parse token", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
@@ -154,5 +153,5 @@ func (s *Server) AuthentificationUser(next http.Handler) http.Handler {
 }
 
 func (s *Server) Start() error {
-	return s.Server.ListenAndServe()
+	return s.server.ListenAndServe()
 }

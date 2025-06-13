@@ -34,7 +34,7 @@ func (s *Server) CreateColumn() http.HandlerFunc {
 
 		const op = "transport.http.CreateColumn"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		var req CreateColumnRequest
 
@@ -57,7 +57,7 @@ func (s *Server) CreateColumn() http.HandlerFunc {
 			ID_project: int64(req.ProjectID),
 		}
 
-		if err := s.Svc.CreateColumn(column); err != nil {
+		if err := s.boardSvc.CreateColumn(column); err != nil {
 			log.Error("failed to create column",
 				sl.Err(err),
 			)
@@ -102,7 +102,7 @@ func (s *Server) ReadColumn() http.HandlerFunc {
 
 		const op = "http.ReadColumn"
 
-		log := s.Logger.With("op", op)
+		log := s.logger.With("op", op)
 
 		var req ReadColumnRequest
 
@@ -121,7 +121,7 @@ func (s *Server) ReadColumn() http.HandlerFunc {
 			ID_project: int64(req.IDProject),
 		}
 
-		resp, err := s.Svc.ReadColumn(column)
+		resp, err := s.boardSvc.ReadColumn(column)
 		if err != nil {
 			log.Error("failed to read column", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
@@ -158,7 +158,7 @@ func (s *Server) DeleteColumn() http.HandlerFunc {
 
 		const op = "http.DeleteColumn"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		var req DeleteColumnRequest
 
@@ -176,7 +176,7 @@ func (s *Server) DeleteColumn() http.HandlerFunc {
 			slog.Int("column_id", req.ID),
 		)
 
-		if err := s.Svc.DeleteColumn(req.ID); err != nil {
+		if err := s.boardSvc.DeleteColumn(req.ID); err != nil {
 			log.Error("failed to delete column", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusInternalServerError,
@@ -214,7 +214,7 @@ func (s *Server) UpdateColumn() http.HandlerFunc {
 
 		const op = "http.UpdateColumn"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		id, err := strconv.Atoi(r.URL.Query().Get("id"))
 		if err != nil {
@@ -257,7 +257,7 @@ func (s *Server) UpdateColumn() http.HandlerFunc {
 		column := model.Column{ID: int64(id)}
 
 		if req.Name != nil {
-			if err := s.Svc.UpdateColumnName(column, *req.Name); err != nil {
+			if err := s.boardSvc.UpdateColumnName(column, *req.Name); err != nil {
 				log.Error("failed to update name", sl.Err(err))
 				updateErrors = append(updateErrors, errors.New("failed to update name"))
 			}

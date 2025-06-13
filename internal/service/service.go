@@ -5,6 +5,10 @@ import (
 	"github.com/wehw93/kanban-board/internal/model"
 )
 
+type AuthService interface {
+	GetJWTSecret() string
+}
+
 type BoardService interface {
 	CreateUser(user *model.User) error
 	LoginUser(email string, password string) (string, error)

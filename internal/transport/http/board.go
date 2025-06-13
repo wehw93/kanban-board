@@ -34,7 +34,7 @@ func (s *Server) CreateProject() http.HandlerFunc {
 
 		const op = "transport.http.CreateProject"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		userID, ok := r.Context().Value("userID").(int)
 		if !ok {
@@ -70,7 +70,7 @@ func (s *Server) CreateProject() http.HandlerFunc {
 			Description: req.Description,
 		}
 
-		if err := s.Svc.CreateProject(project); err != nil {
+		if err := s.boardSvc.CreateProject(project); err != nil {
 			log.Error("failed to create project",
 				sl.Err(err),
 			)
@@ -115,7 +115,7 @@ func (s *Server) ReadProject() http.HandlerFunc {
 
 		const op = "http.ReadProject"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		var req ReadProjectRequest
 
@@ -131,7 +131,7 @@ func (s *Server) ReadProject() http.HandlerFunc {
 
 		log.Info("reading data of project", slog.String("name", req.Name))
 
-		resp, err := s.Svc.ReadProject(req.Name)
+		resp, err := s.boardSvc.ReadProject(req.Name)
 		if err != nil {
 			log.Error("failed to read project", slog.String("name", req.Name), sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
@@ -171,7 +171,7 @@ func (s *Server) DeleteProject() http.HandlerFunc {
 
 		const op = "http.DeleteProject"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		userID, ok := r.Context().Value("userID").(int)
 		if !ok {
@@ -200,7 +200,7 @@ func (s *Server) DeleteProject() http.HandlerFunc {
 			slog.Int("user_id", userID),
 		)
 
-		if err := s.Svc.DeleteProject(userID, req.Name); err != nil {
+		if err := s.boardSvc.DeleteProject(userID, req.Name); err != nil {
 			log.Error("failed to delete project", sl.Err(err))
 			render.JSON(w, r, response.ErrorResponse{
 				Status:  http.StatusInternalServerError,
@@ -241,7 +241,7 @@ func (s *Server) UpdateProject() http.HandlerFunc {
 
 		const op = "http.UpdateProject"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
 		userID, ok := r.Context().Value("userID").(int)
 		if !ok {
@@ -286,7 +286,7 @@ func (s *Server) UpdateProject() http.HandlerFunc {
 		project := model.Project{IDCreator: int64(userID), Name: name}
 
 		if req.Name != nil {
-			if err := s.Svc.UpdateProjectName(*req.Name, project); err != nil {
+			if err := s.boardSvc.UpdateProjectName(*req.Name, project); err != nil {
 				log.Error("failed to update name", sl.Err(err))
 				updateErrors = append(updateErrors, errors.New("failed to update name"))
 			}
@@ -295,7 +295,7 @@ func (s *Server) UpdateProject() http.HandlerFunc {
 
 		if req.Description != nil {
 			project.Description = *req.Description
-			if err := s.Svc.UpdateProjectDescription(project); err != nil {
+			if err := s.boardSvc.UpdateProjectDescription(project); err != nil {
 				log.Error("failed to update description", sl.Err(err))
 				updateErrors = append(updateErrors, errors.New("failed to update description"))
 			}
@@ -331,9 +331,9 @@ func (s *Server) ListProjects() http.HandlerFunc {
 
 		const op = "http.ListProjects"
 
-		log := s.Logger.With(slog.String("op", op))
+		log := s.logger.With(slog.String("op", op))
 
-		listProjects, err := s.Svc.ListProjects()
+		listProjects, err := s.boardSvc.ListProjects()
 
 		if err != nil {
 			log.Error("failed to read list of projects", sl.Err(err))

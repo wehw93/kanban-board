@@ -15,12 +15,14 @@ import (
 	_ "github.com/wehw93/kanban-board/docs"
 	"github.com/wehw93/kanban-board/internal/config"
 	"github.com/wehw93/kanban-board/internal/lib/logger/sl"
+	"github.com/wehw93/kanban-board/internal/service/auth"
 	"github.com/wehw93/kanban-board/internal/service/board"
 	"github.com/wehw93/kanban-board/internal/storage/postgresql"
 	server "github.com/wehw93/kanban-board/internal/transport/http"
 )
 
 const (
+	jwtSecret = "secret"
 	env_local = "local"
 	env_prod  = "prod"
 )
@@ -38,8 +40,11 @@ func main() {
 	log.Info("postgres port: ", cfg.DB.Port)
 	defer store.Close()
 
-	svc := board.NewService(store)
-	srv := server.NewServer(cfg, log, svc)
+	svcAuth := auth.NewService(jwtSecret)
+
+	svcBoard := board.NewService(store, jwtSecret)
+
+	srv := server.NewServer(cfg, log, svcBoard, svcAuth)
 
 	srv.InitRoutes()
 

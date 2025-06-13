@@ -10,17 +10,18 @@ import (
 	"github.com/wehw93/kanban-board/internal/lib/jwt"
 	"github.com/wehw93/kanban-board/internal/model"
 	"github.com/wehw93/kanban-board/internal/storage"
-	srv "github.com/wehw93/kanban-board/internal/transport/http"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Service struct {
-	store storage.Store
+	store     storage.Store
+	jwtSecret string
 }
 
-func NewService(store storage.Store) *Service {
+func NewService(store storage.Store, jwtSceret string) *Service {
 	return &Service{
-		store: store,
+		store:     store,
+		jwtSecret: jwtSceret,
 	}
 }
 
@@ -45,7 +46,7 @@ func (s *Service) LoginUser(email string, password string) (string, error) {
 		return "", fmt.Errorf("%s : %w", op, err)
 	}
 
-	token, err := jwt.NewToken(user, time.Hour, srv.JWTSecret)
+	token, err := jwt.NewToken(user, time.Hour, s.jwtSecret)
 	if err != nil {
 		return "", fmt.Errorf("%s : %w", op, err)
 	}
